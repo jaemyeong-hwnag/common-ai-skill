@@ -39,19 +39,25 @@ jobs:
           import os, json, urllib.request
 
           CRITERIA = """
-          Abstraction rules for SKILL.md files:
+          You are reviewing SKILL.md files for abstraction compliance.
+
+          HARD rules — always reject if violated:
           1. No specific language, library, framework, tool, command, or file path
           2. Rules describe WHAT must be true — not HOW to achieve it
-          3. No explanations of WHY inside <constraints> (e.g. "— reason" after a rule is a violation)
-          4. Only one <constraints> block per skill
-          5. Only <constraints> and <criteria> XML tags allowed (not <instruction>)
-          6. Single responsibility — one skill, one concern
+          3. Single responsibility — one skill, one concern
+
+          STRUCTURAL rules — approve if the new structure is strictly better than the current convention, reject if not:
+          - Current convention: single <constraints> block, single <criteria> block, no WHY explanations inside <constraints>
+          - A structural change (new XML tags, multiple blocks, added explanations) is APPROVED if it
+            demonstrably improves clarity or semantic precision for an AI reader beyond what the current
+            convention achieves. Otherwise REJECTED.
+          - If unsure whether a structural change is better, REJECT it.
 
           Respond ONLY with JSON:
           {
             "passed": true/false,
             "violations": [
-              {"file": "path/to/SKILL.md", "line": "...", "reason": "..."}
+              {"file": "path/to/SKILL.md", "line": "...", "reason": "...", "rule": "hard|structural"}
             ],
             "summary": "one sentence"
           }
@@ -98,7 +104,7 @@ jobs:
               f.write(f"passed={passed}\n")
               f.write(f"summary={summary}\n")
               v_text = "\n".join(
-                  f"- `{v['file']}`: {v['reason']} (`{v.get('line','')}`)"
+                  f"- [{v.get('rule','hard').upper()}] `{v['file']}`: {v['reason']} (`{v.get('line','')}`)"
                   for v in violations
               ) if violations else "없음"
               f.write(f"violations={v_text}\n")
@@ -134,7 +140,8 @@ jobs:
 $VIOLATIONS
 
 ---
-*추상화 원칙: 특정 도구/언어 금지 · What만 기술 · \`<constraints>\`/\`<criteria>\` 포맷 · 단일 책임*"
+*HARD: 특정 도구/언어 금지 · What만 기술 · 단일 책임*
+*STRUCTURAL: 포맷 변경은 현재 구조보다 명확히 개선될 때만 허용*"
 
   ai-review:
     runs-on: ubuntu-latest
