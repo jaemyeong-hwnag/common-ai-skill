@@ -7,15 +7,15 @@ description: Insert human approval, review, or correction checkpoints into AI wo
 
 reach checkpoint → serialize state → emit review request → halt → human acts → restore state → resume
 
-## When to Interrupt
+## Interrupt Triggers
 
-<constraints>
-- irreversible actions (destructive, external, financial)
-- confidence below an explicit threshold
-- ambiguous task where wrong assumptions have high cost
-- policy or compliance sign-off required
-- resource or cost limit about to be exceeded
-</constraints>
+```
+irreversible actions    → destructive, external, financial
+low confidence          → below an explicit threshold
+high-cost ambiguity     → wrong assumption cannot be easily undone
+compliance gate         → policy or sign-off required
+limit approaching       → resource or cost ceiling about to be exceeded
+```
 
 ## Escalation Tiers
 
