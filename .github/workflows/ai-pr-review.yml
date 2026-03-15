@@ -1,0 +1,114 @@
+name: AI PR Review & Auto-merge
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  ai-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get PR diff
+        run: |
+          git diff origin/${{ github.base_ref }}...HEAD > pr.diff
+
+      - name: AI Review via GitHub Models
+        id: review
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 - <<'EOF'
+          import os, json, urllib.request, sys
+
+          diff = open("pr.diff").read()[:8000]  # token limit guard
+
+          payload = {
+            "model": "gpt-4o-mini",
+            "messages": [
+              {
+                "role": "system",
+                "content": (
+                  "You are a code reviewer. Analyze the diff and respond ONLY with JSON:\n"
+                  "{\"approved\": true/false, \"summary\": \"one sentence\", \"issues\": [\"...\"]}\n\n"
+                  "Approve when: code quality acceptable, no security issues, changes coherent.\n"
+                  "Reject when: security vulnerabilities, broken logic, new features without tests."
+                )
+              },
+              {
+                "role": "user",
+                "content": f"Review this PR diff:\n\n{diff}"
+              }
+            ],
+            "response_format": {"type": "json_object"}
+          }
+
+          req = urllib.request.Request(
+            "https://models.inference.ai.azure.com/chat/completions",
+            data=json.dumps(payload).encode(),
+            headers={
+              "Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}",
+              "Content-Type": "application/json"
+            }
+          )
+
+          with urllib.request.urlopen(req) as resp:
+            result = json.loads(resp.read())
+
+          content = json.loads(result["choices"][0]["message"]["content"])
+          approved = str(content.get("approved", False)).lower()
+          summary  = content.get("summary", "")
+          issues   = content.get("issues", [])
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+            f.write(f"approved={approved}\n")
+            f.write(f"summary={summary}\n")
+            issues_text = "\n".join(f"- {i}" for i in issues) if issues else "없음"
+            f.write(f"issues={issues_text}\n")
+
+          print(f"approved={approved}, summary={summary}")
+          EOF
+
+      - name: Post review comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          APPROVED="${{ steps.review.outputs.approved }}"
+          SUMMARY="${{ steps.review.outputs.summary }}"
+          ISSUES="${{ steps.review.outputs.issues }}"
+
+          if [ "$APPROVED" = "true" ]; then
+            ICON="✅"
+            STATUS="승인"
+          else
+            ICON="❌"
+            STATUS="변경 요청"
+          fi
+
+          gh pr comment ${{ github.event.pull_request.number }} --body "## AI 코드 리뷰 $ICON
+
+**결과:** $STATUS
+**요약:** $SUMMARY
+
+**발견된 이슈:**
+$ISSUES
+
+---
+*[GitHub Models](https://github.com/marketplace/models) (gpt-4o-mini) 자동 분석*"
+
+      - name: Enable auto-merge if approved
+        if: steps.review.outputs.approved == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge ${{ github.event.pull_request.number }} \
+            --auto \
+            --squash \
+            --delete-branch
