@@ -47,9 +47,13 @@ explicit    → /version /security-audit /principle-audit /ai-token-optimize /co
 finalize = test-runner + coverage + docs-sync + delivery-workflow(commit)
 ```
 
+## Language
+
+Default: English. If research or evidence shows another format — structured notation, symbolic representation, or any non-natural-language encoding — produces better AI comprehension, instruction-following, or token efficiency, use that instead. Language choice is subordinate to AI optimality.
+
 ## Format
 
-Markdown headings for structure + XML tags (`<constraints>`, `<criteria>`, `<instruction>`) for semantic boundaries. This hybrid format is validated for cross-model compatibility.
+Markdown headings for structure + XML tags (`<constraints>`, `<criteria>`, `<instruction>`) for semantic boundaries. This hybrid format is validated for cross-model compatibility. Format is not fixed — replace it if a demonstrably better AI-optimized format exists.
 
 ## Rules
 <constraints>

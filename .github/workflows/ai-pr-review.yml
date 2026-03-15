@@ -39,25 +39,33 @@ jobs:
           import os, json, urllib.request
 
           CRITERIA = """
-          You are reviewing SKILL.md files for abstraction compliance. All output must be in English.
+          You are reviewing SKILL.md files for abstraction and format compliance.
+          All output must be in English.
 
           HARD rules — always reject if violated:
-          1. No specific language, library, framework, tool, command, or file path mentioned anywhere.
+          1. No specific language, library, framework, tool, command, or file path.
           2. Rules describe WHAT must be true — not HOW to achieve it.
-          3. Single responsibility — one skill covers exactly one concern.
+          3. Single responsibility — one skill, one concern.
 
           STRUCTURAL rules — evaluated against AI prompt engineering research:
-          The current convention is: single <constraints> block, single <criteria> block, no WHY
-          explanations inside <constraints>.
-          A structural change (new XML tags, multiple blocks, added context/explanations, different
-          section layout) is APPROVED only if it is more optimal or efficient for an AI reader based
-          on established prompt engineering principles and research — for example:
-          - structured prompting research showing tagged sections reduce hallucination
+          Current convention: single <constraints> block, single <criteria> block,
+          no WHY explanations inside <constraints>.
+          A structural change is APPROVED only if it is demonstrably more optimal or
+          efficient for an AI reader, supported by prompt engineering research — e.g.:
+          - tagged sections reducing hallucination (structured prompting research)
+          - XML/semantic markup improving instruction-following accuracy
           - chain-of-thought or role-separation patterns from published papers
-          - XML/semantic markup findings showing improved instruction-following
-          - retrieval or compression research showing the new format reduces token waste
-          If a structural change cannot be justified by such evidence, REJECT it.
-          When unsure, REJECT.
+          - compression or positional encoding findings improving token efficiency
+          If unsure, REJECT.
+
+          LANGUAGE rules — evaluated against AI comprehension research:
+          Default language is English. A non-English or non-natural-language format
+          (structured notation, symbolic representation, formal encoding) is APPROVED
+          only if research or evidence shows it produces measurably better AI
+          comprehension, instruction-following, or token efficiency than English prose.
+          Human readability is NOT a criterion — AI optimality is.
+          If unsure, English is correct. REJECT non-English natural language with no
+          research justification.
 
           Respond ONLY with JSON:
           {
@@ -67,7 +75,7 @@ jobs:
                 "file": "path/to/SKILL.md",
                 "line": "exact line or snippet",
                 "reason": "explanation",
-                "rule": "hard|structural"
+                "rule": "hard|structural|language"
               }
             ],
             "summary": "one sentence in English"
@@ -152,7 +160,8 @@ $VIOLATIONS
 
 ---
 *HARD: no tool/lang specifics · What-not-How · single responsibility*
-*STRUCTURAL: format changes approved only if more optimal/efficient for AI readers per prompt engineering research*"
+*STRUCTURAL: format changes approved only if justified by prompt engineering research*
+*LANGUAGE: English default · non-English or non-natural-language approved only if measurably better for AI*"
 
   ai-review:
     runs-on: ubuntu-latest
