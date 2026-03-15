@@ -39,6 +39,12 @@
 | `version` | 릴리즈 전 | 버전 탐지, 범프, CHANGELOG, 태그 |
 | `ai-token-optimize` | AI용 코드 작성 시 | 프롬프트/툴 출력 토큰 절감 |
 | `principle-audit` | 온디맨드 | 프로젝트 원칙을 위반하는 코드 탐지 |
+| `framework-selection` | 도구/아키텍처 선택 전 | 문제 복잡도 분류 → 최소 복잡도 솔루션 선택 |
+| `rag-development` | RAG 파이프라인 구현 | 수집 → 청킹 → 임베딩 → 저장 → 검색 → 생성 |
+| `observability` | AI 워크플로우 구현 시 | 모델 호출, 툴 호출, 상태 전환 계측 |
+| `evaluation` | AI 품질 측정 필요 시 | 데이터셋 생성, 평가자 작성, 품질 지표 측정 |
+| `human-in-the-loop` | 비가역적 작업 전 | 인터럽트 → 상태 직렬화 → 승인 후 재개 |
+| `agent-orchestration` | 멀티 에이전트 구현 시 | 라우팅, 위임, 병렬 처리, 결과 집계 |
 
 ---
 
@@ -83,6 +89,14 @@ done
 ## 포맷
 
 Markdown 제목(`##`)으로 구조화 + XML 태그(`<constraints>`, `<criteria>`, `<instruction>`)로 의미적 경계 표시. 이 하이브리드 포맷은 교차 모델 호환성을 위해 검증되었습니다.
+
+---
+
+## 참고 자료
+
+- [langchain-ai/langchain-skills](https://github.com/langchain-ai/langchain-skills) — LangChain, LangGraph, Deep Agents용 에이전트 스킬 모음
+- [langchain-ai/langsmith-skills](https://github.com/langchain-ai/langsmith-skills) — LangSmith 관측성, 데이터셋, 평가용 에이전트 스킬
+- [langchain-ai/skills-benchmarks](https://github.com/langchain-ai/skills-benchmarks) — 스킬 효과를 측정하는 실증적 벤치마크 하니스
 
 ---
 
