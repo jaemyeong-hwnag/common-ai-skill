@@ -3,51 +3,32 @@ name: observability
 description: Instrument AI workflows with tracing, logging, and monitoring to enable debugging, auditing, and performance analysis.
 ---
 
-## What to Instrument
+## Sequence
 
-<instruction>
-instrument at these boundaries:
-- entry points (user input, API calls, scheduled triggers)
-- AI model calls (inputs, outputs, latency, token counts)
-- tool/function calls (name, inputs, outputs, errors)
-- inter-agent messages (sender, receiver, content, timing)
-- state transitions (before/after, what changed, why)
-</instruction>
+identify instrumentation boundaries → add spans → attach metadata → verify no gaps
 
-## Trace Structure
+## Boundaries
 
 ```
-trace
-  └── span: root operation
-        ├── span: model call (inputs, outputs, latency, tokens)
-        ├── span: tool call (name, args, result, error)
-        └── span: sub-operation
-              └── span: model call
+entry points      → user input, external triggers
+model calls       → inputs, outputs, latency, token counts
+tool calls        → name, inputs, outputs, errors
+inter-agent msgs  → sender, receiver, content, timing
+state transitions → before/after snapshot
 ```
 
 ## Rules
 
 <constraints>
-- every AI model call must be traced
-- traces must include enough context to reproduce the behavior
-- never log secrets, PII, or credentials inside traces
+- every AI model call must produce a trace entry
 - propagate trace context across service boundaries
-- attach correlation IDs to connect traces to user sessions or jobs
-- structured logs only — free-form strings are not queryable
+- attach a correlation ID to every trace
+- structured output only — no free-form strings
+- no secrets, PII, or credentials in traces
 </constraints>
-
-## Query Patterns
-
-<instruction>
-when debugging, query by:
-- trace ID for single-request investigation
-- time range + error flag for incident review
-- latency percentile for performance analysis
-- token count for cost analysis
-</instruction>
 
 ## Done
 
 <criteria>
-all model calls traced + tool calls recorded + no secrets in traces + structured output + correlation IDs present
+all model calls traced + tool calls recorded + correlation IDs present + no secrets in traces
 </criteria>

@@ -3,48 +3,34 @@ name: agent-orchestration
 description: Coordinate multiple agents — routing, delegation, parallelism, state sharing, and result aggregation.
 ---
 
-## Orchestration Patterns
+## Sequence
+
+decompose task → route or delegate → execute → aggregate results → handle failures
+
+## Patterns
 
 ```
-sequential  → agent A output → agent B input → ... → final result
-parallel    → dispatch N tasks → wait for all → aggregate
-routing     → classify input → dispatch to specialist agent
-delegation  → orchestrator breaks task → sub-agents execute → orchestrator assembles
-map-reduce  → split input → process in parallel → reduce results
+sequential   → chain agent outputs as inputs
+parallel     → dispatch independent tasks, aggregate results
+routing      → classify input, dispatch to specialist
+delegation   → orchestrator plans, sub-agents execute
+map-reduce   → split input, process independently, reduce
 ```
 
 ## Rules
 
 <constraints>
 - orchestrator owns the plan; sub-agents own execution
-- sub-agents must not know about each other — communicate only via orchestrator
-- every message between agents must be serializable
+- sub-agents must not communicate directly — only via orchestrator
+- every inter-agent message must be serializable
 - sub-agent failures must be handled explicitly — no silent drops
-- define a maximum depth for delegation chains to prevent infinite recursion
-- shared state must be accessed through a single authoritative store, not passed in messages
+- delegation chain depth must be bounded
+- shared state must flow through a single authoritative store
+- every message must carry a correlation ID traceable to the root request
 </constraints>
-
-## Message Contract
-
-<instruction>
-each inter-agent message must include:
-- task description (what to do)
-- required inputs (data, context)
-- expected output format
-- constraints (time, cost, scope limits)
-- correlation ID (to trace back to root request)
-</instruction>
-
-## Failure Handling
-
-```
-sub-agent error    → retry with backoff → escalate to orchestrator → human-in-the-loop if needed
-timeout            → cancel + mark partial result → continue with available results
-partial failure    → proceed if core path succeeded, flag degraded output
-```
 
 ## Done
 
 <criteria>
-agents communicate only via orchestrator + messages serializable + failures handled + delegation depth bounded + correlation IDs present
+agents communicate only via orchestrator + messages serializable + failures handled + depth bounded + correlation IDs present
 </criteria>

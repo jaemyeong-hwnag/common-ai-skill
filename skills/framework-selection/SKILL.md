@@ -3,38 +3,30 @@ name: framework-selection
 description: Choose the right tool, library, or architecture for the task — minimal complexity for the requirement.
 ---
 
-## Decision Sequence
+## Sequence
 
-<instruction>
-Before choosing a solution, classify the problem:
-1. what is the core requirement? (single call, pipeline, stateful workflow, multi-agent)
-2. what is the complexity level? (simple → complex)
-3. what already exists in the project?
-
-match complexity to requirement — never over-engineer, never under-engineer
-</instruction>
+classify problem complexity → detect what the project already uses → match to the lowest sufficient tier → record rationale
 
 ## Complexity Tiers
 
 ```
-single call       → simplest in-process solution, no framework
+single call       → no framework
 pipeline          → composable steps, minimal orchestration
-stateful workflow → explicit state, checkpointing, resumability
-multi-agent       → routing, delegation, parallelism, coordination
+stateful workflow → explicit state, resumability
+multi-agent       → routing, delegation, parallelism
 ```
 
 ## Rules
 
 <constraints>
-- detect what the project already uses before proposing anything new
-- start at the lowest tier that satisfies the requirement
-- escalate one tier only when the lower tier cannot meet a stated requirement
-- document the reason for tier choice in the decision
-- switching tiers mid-project requires justification
+- detect existing project tools before proposing new ones
+- start at the lowest tier that satisfies the stated requirement
+- escalate only when the lower tier cannot meet a requirement
+- switching tiers mid-project requires explicit justification
 </constraints>
 
 ## Done
 
 <criteria>
-chosen approach matches complexity tier + existing project conventions respected + rationale recorded
+chosen approach matches complexity tier + existing conventions respected + rationale recorded
 </criteria>
