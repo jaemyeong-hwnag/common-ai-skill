@@ -81,9 +81,19 @@ Title: improve: <what was improved>
 - Cite research for non-obvious design decisions
 </constraints>
 
+## Adding a New Skill
+
+When adding a new skill:
+
+1. Create `skills/<name>/SKILL.md` with frontmatter (`name`, `description`) and sections: Sequence, Rules (`<constraints>`), Done (`<criteria>`)
+2. Add the skill's full content to `README.md` under `## Skills` — copy the same structure: description, sequence, rules, done criteria
+3. Add the skill name and one-line description to the `Auto-Selection` block in README if it applies to an auto-selection scenario
+4. Update `CONTRIBUTING.md` if the new skill introduces a new category
+
+**README must always reflect the full content of every skill in `skills/*/SKILL.md`.**
+
 ## What NOT to Change
 
 - Do not add language-specific, framework-specific, or tool-specific content
 - Do not add examples that reference specific technologies
 - Do not expand skills with verbose natural language explanations
-- Do not duplicate information between README and individual skills
