@@ -23,6 +23,7 @@ AI feature   → framework-selection (before choosing tools)
             + human-in-the-loop (if irreversible actions)
             + agent-orchestration (if multi-agent)
 explicit    → /version /security-audit /principle-audit /ai-token-optimize /coverage /test-runner /finalize
+PWA app     → pwa + ad-monetization (if monetized) + viral-share (if share feature)
 ```
 
 ## Composition
@@ -524,6 +525,113 @@ Markdown headings for structure + XML tags (`<constraints>`, `<criteria>`, `<ins
 - deps point inward only
 - coverage target ≥80%, priority: core→service→integration→entry
 </constraints>
+
+---
+
+### pwa
+> Configure a client-side web app for installation, offline use, and push notifications.
+
+**Sequence**
+
+declare app identity and entry point → define installability criteria → implement offline caching strategy → add install prompt → integrate push notification subscription
+
+**Caching Strategy**
+
+```
+static assets        → cache-first, long TTL
+dynamic API data     → stale-while-revalidate, short TTL
+navigation requests  → network-first with offline fallback
+```
+
+**Rules**
+<constraints>
+- push credentials must never be embedded in client code
+- offline behavior must be explicitly designed, not assumed by the caching layer
+- install prompt must appear only after the user has demonstrated intent
+- caching strategy must differentiate static assets from dynamic data
+- push permission must be requested only after a user-initiated action, never on page load
+- always provide a path to unsubscribe from push
+</constraints>
+
+**Done**
+<criteria>
+app is installable from the browser + offline state shows cached content, not a blank screen + push subscription flow complete + push credentials stored outside client bundle
+</criteria>
+
+---
+
+### ad-monetization
+> Integrate display advertising into a client-side app — maximize yield without degrading user experience or performance metrics.
+
+**Sequence**
+
+identify high-attention placement zones → configure ad units by zone priority → implement state-triggered units → verify policy compliance → measure performance impact
+
+**Placement Priority**
+
+```
+1. post-primary-content   — after user consumes key value, highest CTR
+2. contextual-trigger     — on significant emotional state change, highest CPM, max 1/session
+3. persistent-anchor      — on notification or deep-link landing flows
+❌ above-fold fixed        — blocks content, causes banner blindness, harms ratings
+```
+
+**Rules**
+<constraints>
+- state-triggered (interstitial) units must fire at most once per session
+- every ad unit must have a visible dismiss path
+- ads must not block or delay the primary user task
+- consent mechanism required where legally mandated before ad scripts load
+- ad units outside the viewport must be lazy-loaded to protect performance scores
+- ad client ID must be stored in environment config, not hardcoded
+</constraints>
+
+**Done**
+<criteria>
+units render without errors + state-triggered unit fires once per session on correct trigger + core performance metrics unaffected + policy compliance checklist passed
+</criteria>
+
+---
+
+### viral-share
+> Make app output shareable in one action — implement the share mechanism, craft share content, and configure social previews for screenshot-driven spread.
+
+**Sequence**
+
+implement primary share mechanism → define fallback for unsupported environments → craft share content template → configure social meta tags → design share-worthy visual state
+
+**Share Content Template**
+
+```
+[app name/identity] + [core metric(s)] + [status message] + [URL]
+max 280 chars — readable without app context
+include 2–3 relevant signals for visual scan
+```
+
+**Social Meta**
+
+```
+og:title        → dynamic state summary
+og:description  → one-line metric + status
+og:image        → 1200×630, high contrast, key numbers large
+twitter:card    → summary_large_image
+```
+
+**Rules**
+<constraints>
+- share trigger must be reachable without scrolling from the primary output
+- share action must complete in a single user gesture — no confirmation dialogs
+- share content must be meaningful without app context (standalone readability)
+- visual design of the shareable state must prioritize legibility and emotional impact over UI completeness
+- a fallback (clipboard copy) must work in all environments where the primary mechanism is unavailable
+</constraints>
+
+**Done**
+<criteria>
+share completes in one gesture + fallback works across all environments + social preview renders correctly in major platforms + share trigger is visible without scroll
+</criteria>
+
+---
 
 ## Contributing
 
