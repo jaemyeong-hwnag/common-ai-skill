@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.4] - 2026-03-24
+
+### Fixed
+- `ai-pr-review.yml`: duplicate `env:` key in `Check abstraction compliance` step — YAML disallows duplicate mapping keys, causing GitHub to reject the workflow at validation time (0s phantom failures)
+- `reusable-skill-check.yml`: `GITHUB_TOKEN` declared as a `workflow_call` secret — GitHub forbids this; the automatic token is always provided to called workflows
+
 ## [1.1.3] - 2026-03-24
 
 ### Fixed
