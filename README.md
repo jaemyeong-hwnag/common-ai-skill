@@ -2,7 +2,9 @@
 
 ## Directive
 <instruction>
-These are abstract skill definitions for any AI (Claude, GPT, Gemini, Llama, DeepSeek, etc.). Read skill → analyze target project → implement using project's own conventions. You decide HOW.
+Skills are interfaces: each skill defines WHAT must be achieved — never HOW.
+You are the implementation: read the skill → inspect this project → fulfill the contract using this project's own language, tools, and conventions.
+One skill works for any project, any language, any AI — because you are the adapter.
 </instruction>
 
 ## How Skills Are Loaded

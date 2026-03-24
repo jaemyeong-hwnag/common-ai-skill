@@ -2,8 +2,8 @@
 
 # common-ai-skil
 
-**AI를 위한 추상 스킬 라이브러리**
-**Abstract skill library — for any AI**
+**스킬 = 인터페이스. AI = 구현체.**
+**Skills are interfaces. AI is the implementation.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -13,11 +13,21 @@
 
 ## 이 프로젝트는 무엇인가요?
 
-`common-ai-skil`은 AI가 소프트웨어를 개발할 때 따르는 **행동 지침(스킬)** 모음입니다.
+**스킬은 인터페이스입니다. AI가 구현체입니다.**
+
+스킬은 **무엇을(WHAT)** 달성해야 하는지만 정의합니다. **어떻게(HOW)** 는 AI가 프로젝트를 분석해서 결정합니다.
+
+```
+skill: "run tests before commit"        ← 인터페이스 (불변)
+  → Node 프로젝트: npm test             ← AI가 결정한 구현
+  → Python 프로젝트: pytest             ← AI가 결정한 구현
+  → Rust 프로젝트: cargo test           ← AI가 결정한 구현
+```
+
+도구가 바뀌어도 스킬은 바뀌지 않습니다. AI가 어댑터입니다.
 
 - 특정 언어, 프레임워크, 프로젝트에 종속되지 않습니다
 - **모든 AI** (Claude, GPT, Gemini, Llama, DeepSeek 등)에서 사용 가능합니다
-- AI가 스킬을 읽고, 현재 프로젝트를 분석한 뒤, **스스로 적용 방법을 결정**합니다
 - 사람이 할 일: 설치만 하면 됩니다
 
 > **목표:** 한 번 설치하면 어떤 프로젝트에서든, 어떤 AI든 알아서 적용합니다.

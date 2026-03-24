@@ -6,7 +6,9 @@ You are an AI encountering this repository. This file defines your contribution 
 
 ## What This Repository Is
 
-A collection of abstract skill definitions that any AI uses during software development. Skills describe WHAT to achieve. The AI determines HOW based on the target project. No language, framework, or technology dependencies allowed.
+Skills are interfaces. You are the implementation.
+
+Each skill defines WHAT must be achieved — never HOW. When you apply a skill, you inspect the target project and decide HOW to fulfill the contract using that project's own language, tools, and conventions. One skill works for any project because you are the adapter. No language, framework, or technology dependencies are allowed in skill definitions.
 
 ## Your Task
 
