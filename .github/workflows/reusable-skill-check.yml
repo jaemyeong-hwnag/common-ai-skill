@@ -71,34 +71,25 @@ jobs:
           if not diff.strip():
               result = {"passed": True, "violations": [], "summary": "No changes to review."}
           else:
-              system_prompt = f"""You are a code reviewer enforcing AI skill compliance.
-
-The project uses these skills as behavioral rules for development:
-
-{skills}
-
-Review the PR diff and check if the changes comply with the active skills.
-
-Focus on:
-- delivery-workflow: Does each commit serve a single purpose? Are tests included?
-- test-runner / coverage: Are new behaviors covered by tests?
-- security-audit: Any obvious security issues (secrets, injection, etc.)?
-- Other active skills: Does the code follow the skill's constraints?
-
-Respond ONLY with JSON:
-{{
-  "passed": true/false,
-  "violations": [
-    {{
-      "skill": "skill-name",
-      "description": "what was violated",
-      "suggestion": "how to fix it"
-    }}
-  ],
-  "summary": "one sentence summary"
-}}
-If no violations, violations must be empty and passed must be true.
-All output must be in English."""
+              system_prompt = (
+                  "You are a code reviewer enforcing AI skill compliance.\n\n"
+                  "The project uses these skills as behavioral rules for development:\n\n"
+                  + skills + "\n\n"
+                  "Review the PR diff and check if the changes comply with the active skills.\n\n"
+                  "Focus on:\n"
+                  "- delivery-workflow: Does each commit serve a single purpose? Are tests included?\n"
+                  "- test-runner / coverage: Are new behaviors covered by tests?\n"
+                  "- security-audit: Any obvious security issues (secrets, injection, etc.)?\n"
+                  "- Other active skills: Does the code follow the skill's constraints?\n\n"
+                  'Respond ONLY with JSON:\n'
+                  '{\n'
+                  '  "passed": true/false,\n'
+                  '  "violations": [{"skill": "skill-name", "description": "what was violated", "suggestion": "how to fix it"}],\n'
+                  '  "summary": "one sentence summary"\n'
+                  '}\n'
+                  "If no violations, violations must be empty and passed must be true.\n"
+                  "All output must be in English."
+              )
 
               payload = {{
                 "model": "gpt-4o-mini",
@@ -154,17 +145,20 @@ All output must be in English."""
             STATUS="Violations found"
           fi
 
-          gh pr comment ${{ github.event.pull_request.number }} --body "## Skill Compliance Check $ICON
-
-**Result:** $STATUS
-**Enforced skills:** \`$SKILLS\`
-**Summary:** $SUMMARY
-
-**Violations:**
-$VIOLATIONS
-
----
-*Powered by [common-ai-skill](https://github.com/hjm/common-ai-skill)*"
+          {
+            echo "## Skill Compliance Check $ICON"
+            echo ""
+            echo "**Result:** $STATUS"
+            echo "**Enforced skills:** \`$SKILLS\`"
+            echo "**Summary:** $SUMMARY"
+            echo ""
+            echo "**Violations:**"
+            echo "$VIOLATIONS"
+            echo ""
+            echo "---"
+            echo "*Powered by [common-ai-skill](https://github.com/hjm/common-ai-skill)*"
+          } > /tmp/comment.md
+          gh pr comment ${{ github.event.pull_request.number }} --body-file /tmp/comment.md
 
       - name: Fail if violations found
         if: inputs.fail_on_violation && steps.compliance.outputs.passed != 'true'

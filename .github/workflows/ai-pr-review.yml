@@ -150,18 +150,21 @@ jobs:
             STATUS="Violations detected"
           fi
 
-          gh pr comment ${{ github.event.pull_request.number }} --body "## Abstraction Check $ICON
-
-**Result:** $STATUS
-**Summary:** $SUMMARY
-
-**Violations:**
-$VIOLATIONS
-
----
-*HARD: no tool/lang specifics · What-not-How · single responsibility*
-*STRUCTURAL: format changes approved only if justified by prompt engineering research*
-*LANGUAGE: English default · non-English or non-natural-language approved only if measurably better for AI*"
+          {
+            echo "## Abstraction Check $ICON"
+            echo ""
+            echo "**Result:** $STATUS"
+            echo "**Summary:** $SUMMARY"
+            echo ""
+            echo "**Violations:**"
+            echo "$VIOLATIONS"
+            echo ""
+            echo "---"
+            echo "*HARD: no tool/lang specifics · What-not-How · single responsibility*"
+            echo "*STRUCTURAL: format changes approved only if justified by prompt engineering research*"
+            echo "*LANGUAGE: English default · non-English or non-natural-language approved only if measurably better for AI*"
+          } > /tmp/comment.md
+          gh pr comment ${{ github.event.pull_request.number }} --body-file /tmp/comment.md
 
   ai-review:
     runs-on: ubuntu-latest
@@ -249,16 +252,19 @@ $VIOLATIONS
             STATUS="Changes requested"
           fi
 
-          gh pr comment ${{ github.event.pull_request.number }} --body "## AI Code Review $ICON
-
-**Result:** $STATUS
-**Summary:** $SUMMARY
-
-**Issues:**
-$ISSUES
-
----
-*Analyzed by [GitHub Models](https://github.com/marketplace/models) (gpt-4o-mini)*"
+          {
+            echo "## AI Code Review $ICON"
+            echo ""
+            echo "**Result:** $STATUS"
+            echo "**Summary:** $SUMMARY"
+            echo ""
+            echo "**Issues:**"
+            echo "$ISSUES"
+            echo ""
+            echo "---"
+            echo "*Analyzed by [GitHub Models](https://github.com/marketplace/models) (gpt-4o-mini)*"
+          } > /tmp/comment.md
+          gh pr comment ${{ github.event.pull_request.number }} --body-file /tmp/comment.md
 
       - name: Enable auto-merge if approved
         if: |
