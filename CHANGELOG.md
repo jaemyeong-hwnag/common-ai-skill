@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1] - 2026-03-24
+
+### Fixed
+- GitHub Actions 워크플로우 YAML 파싱 에러 수정 — `run: |` 블록 내 멀티라인 문자열이 column 0으로 떨어져 YAML 파서가 `*`/`{`를 alias/mapping으로 오인, 모든 워크플로우 실행이 `jobs: []`, `conclusion: failure`로 종료되던 문제
+- `ai-pr-review.yml`: PR 코멘트 body를 `echo` + `--body-file` 방식으로 교체
+- `reusable-skill-check.yml`: PR 코멘트 body 교체 + Python f-string을 문자열 연결로 교체
+
 ## [1.1.0] - 2026-03-24
 
 ### Added
