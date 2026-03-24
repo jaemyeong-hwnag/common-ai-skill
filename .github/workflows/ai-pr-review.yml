@@ -3,6 +3,8 @@ name: AI PR Review & Auto-merge
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  push:
+    branches: ['**']
 
 permissions:
   contents: write

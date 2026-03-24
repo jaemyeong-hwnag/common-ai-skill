@@ -1,6 +1,8 @@
 name: Skill Compliance Check (Reusable)
 
 on:
+  push:
+    branches: ['**']
   workflow_call:
     inputs:
       skills:
