@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.3] - 2026-03-24
+
+### Fixed
+- `ai-pr-review.yml`: 중복 `if:` 키(`ai-review` job에서 lines 173·176)로 인한 YAML 파싱 실패 수정 — GitHub이 workflow run을 즉시 failure(0s, 0 jobs)로 처리하던 근본 원인
+- workflow 파일들에서 불필요한 `push` 트리거 및 `noop` job 제거 — 의도된 트리거로 복원: `ai-pr-review.yml`은 `pull_request`만, `reusable-skill-check.yml`은 `workflow_call`만
+
 ## [1.1.2] - 2026-03-24
 
 ### Fixed
