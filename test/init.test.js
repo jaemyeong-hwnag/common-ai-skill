@@ -15,76 +15,44 @@ function withTempDir(fn) {
   }
 }
 
-function runInit(cwd) {
-  execSync(`node ${INIT_SCRIPT}`, { cwd, stdio: "pipe" });
+function runInit(homeDir) {
+  execSync(`node ${INIT_SCRIPT}`, {
+    stdio: "pipe",
+    env: { ...process.env, HOME: homeDir },
+  });
 }
 
-function readClaude(dir) {
-  return fs.readFileSync(path.join(dir, "CLAUDE.md"), "utf8");
+function skillsDir(homeDir) {
+  return path.join(homeDir, ".claude", "skills");
 }
 
-// Simulate node_modules layout so @path refs are realistic
-function setupNodeModules(dir) {
-  const skillsBase = path.join(
-    dir,
-    "node_modules",
-    "common-ai-skill",
-    "skills"
-  );
-  fs.mkdirSync(path.join(skillsBase, "delivery-workflow"), { recursive: true });
-  fs.writeFileSync(
-    path.join(skillsBase, "delivery-workflow", "SKILL.md"),
-    "# delivery-workflow"
-  );
-}
-
-// Test 1: creates CLAUDE.md when none exists
-withTempDir((dir) => {
-  setupNodeModules(dir);
-  runInit(dir);
-  const content = readClaude(dir);
+// Test 1: copies skills to ~/.claude/skills/
+withTempDir((homeDir) => {
+  runInit(homeDir);
+  const dest = skillsDir(homeDir);
+  assert.ok(fs.existsSync(dest), "~/.claude/skills/ should exist");
   assert.ok(
-    content.includes("<!-- common-ai-skill:start -->"),
-    "should contain start marker"
+    fs.existsSync(path.join(dest, "delivery-workflow", "SKILL.md")),
+    "delivery-workflow/SKILL.md should be copied"
   );
-  assert.ok(
-    content.includes("<!-- common-ai-skill:end -->"),
-    "should contain end marker"
-  );
-  assert.ok(
-    content.includes("@node_modules/common-ai-skill/skills/delivery-workflow/SKILL.md"),
-    "should include delivery-workflow import"
-  );
-  console.log("✓ creates CLAUDE.md from scratch");
+  console.log("✓ copies skills to ~/.claude/skills/");
 });
 
-// Test 2: appends to existing CLAUDE.md
-withTempDir((dir) => {
-  setupNodeModules(dir);
-  fs.writeFileSync(path.join(dir, "CLAUDE.md"), "# My Project\n\nExisting content.\n");
-  runInit(dir);
-  const content = readClaude(dir);
-  assert.ok(content.includes("# My Project"), "should preserve existing content");
-  assert.ok(content.includes("<!-- common-ai-skill:start -->"), "should add skill block");
-  console.log("✓ appends to existing CLAUDE.md without overwriting");
+// Test 2: idempotent — re-run does not fail or duplicate
+withTempDir((homeDir) => {
+  runInit(homeDir);
+  runInit(homeDir);
+  const dest = skillsDir(homeDir);
+  const files = fs.readdirSync(dest);
+  const dupes = files.filter((f) => files.indexOf(f) !== files.lastIndexOf(f));
+  assert.strictEqual(dupes.length, 0, "no duplicate skill dirs on re-run");
+  console.log("✓ idempotent — re-run does not duplicate");
 });
 
-// Test 3: updates (does not duplicate) on re-run
-withTempDir((dir) => {
-  setupNodeModules(dir);
-  runInit(dir);
-  runInit(dir); // second run
-  const content = readClaude(dir);
-  const count = (content.match(/<!-- common-ai-skill:start -->/g) || []).length;
-  assert.strictEqual(count, 1, "should not duplicate skill block on re-run");
-  console.log("✓ idempotent — no duplicate block on re-run");
-});
-
-// Test 4: all 17 skills are included
-withTempDir((dir) => {
-  setupNodeModules(dir);
-  runInit(dir);
-  const content = readClaude(dir);
+// Test 3: all 17 skills are installed
+withTempDir((homeDir) => {
+  runInit(homeDir);
+  const dest = skillsDir(homeDir);
   const expected = [
     "delivery-workflow",
     "test-runner",
@@ -105,9 +73,23 @@ withTempDir((dir) => {
     "agent-orchestration",
   ];
   for (const skill of expected) {
-    assert.ok(content.includes(skill), `should include skill: ${skill}`);
+    assert.ok(
+      fs.existsSync(path.join(dest, skill, "SKILL.md")),
+      `should install skill: ${skill}`
+    );
   }
-  console.log(`✓ all ${expected.length} skills included`);
+  console.log(`✓ all ${expected.length} skills installed`);
+});
+
+// Test 4: each installed file is non-empty
+withTempDir((homeDir) => {
+  runInit(homeDir);
+  const dest = skillsDir(homeDir);
+  for (const skill of fs.readdirSync(dest)) {
+    const content = fs.readFileSync(path.join(dest, skill, "SKILL.md"), "utf8");
+    assert.ok(content.length > 0, `${skill}/SKILL.md should not be empty`);
+  }
+  console.log("✓ all installed SKILL.md files are non-empty");
 });
 
 console.log("\nAll tests passed.");

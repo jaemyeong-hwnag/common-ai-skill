@@ -2,10 +2,10 @@
 
 const fs = require("fs");
 const path = require("path");
+const os = require("os");
 
-const CLAUDE_MD = path.join(process.cwd(), "CLAUDE.md");
-const MARKER_START = "<!-- common-ai-skill:start -->";
-const MARKER_END = "<!-- common-ai-skill:end -->";
+const SKILLS_SRC = path.resolve(__dirname, "../skills");
+const SKILLS_DEST = path.join(os.homedir(), ".claude", "skills");
 
 const SKILLS = [
   "delivery-workflow",
@@ -27,45 +27,23 @@ const SKILLS = [
   "agent-orchestration",
 ];
 
-function buildSkillBlock() {
-  const imports = SKILLS.map(
-    (s) => `@node_modules/common-ai-skill/skills/${s}/SKILL.md`
-  ).join("\n");
-
-  return `${MARKER_START}
-# common-ai-skill
-Auto-select and apply skills based on work context. Detect project conventions first, then implement.
-
-${imports}
-${MARKER_END}`;
-}
-
 function run() {
-  const block = buildSkillBlock();
+  fs.mkdirSync(SKILLS_DEST, { recursive: true });
 
-  if (!fs.existsSync(CLAUDE_MD)) {
-    fs.writeFileSync(CLAUDE_MD, block + "\n");
-    console.log("✓ Created CLAUDE.md with common-ai-skill imports");
-    return;
+  let installed = 0;
+  for (const skill of SKILLS) {
+    const src = path.join(SKILLS_SRC, skill, "SKILL.md");
+    if (!fs.existsSync(src)) {
+      console.warn(`⚠ skill not found: ${skill}`);
+      continue;
+    }
+    const destDir = path.join(SKILLS_DEST, skill);
+    fs.mkdirSync(destDir, { recursive: true });
+    fs.copyFileSync(src, path.join(destDir, "SKILL.md"));
+    installed++;
   }
 
-  let content = fs.readFileSync(CLAUDE_MD, "utf8");
-
-  if (content.includes(MARKER_START)) {
-    // Update existing block
-    const re = new RegExp(
-      `${MARKER_START}[\\s\\S]*?${MARKER_END}`,
-      "m"
-    );
-    content = content.replace(re, block);
-    fs.writeFileSync(CLAUDE_MD, content);
-    console.log("✓ Updated common-ai-skill imports in CLAUDE.md");
-    return;
-  }
-
-  // Append to existing file
-  fs.writeFileSync(CLAUDE_MD, content.trimEnd() + "\n\n" + block + "\n");
-  console.log("✓ Added common-ai-skill imports to CLAUDE.md");
+  console.log(`✓ Installed ${installed} skills to ${SKILLS_DEST}`);
 }
 
 run();
