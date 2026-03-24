@@ -108,13 +108,46 @@ done
 
 ---
 
+## 브랜치 및 PR 규칙 (Git Flow)
+
+이 프로젝트는 **git flow**를 따릅니다.
+
+### 브랜치 구조
+
+```
+main        ← 배포 전용. 직접 push 금지.
+  └─ develop ← 통합 브랜치. 직접 push 금지.
+       ├─ feature/<이슈번호>-<설명>   ← 새 기능
+       ├─ improve/<설명>              ← AI 감사 개선
+       ├─ chore/<설명>                ← 설정/도구
+       └─ release/<버전>              ← 릴리즈 준비
+main ←── hotfix/<이슈번호>-<설명>    ← 긴급 수정
+```
+
+### PR 규칙
+
+| 브랜치 종류 | PR 타겟 | Merge 방식 |
+|-------------|---------|------------|
+| `feature/*`, `improve/*`, `chore/*` | `develop` | Squash merge |
+| `release/*` | `main` + `develop` | Merge commit |
+| `hotfix/*` | `main` + `develop` | Squash merge |
+
+### 기여 절차
+
+1. GitHub에서 이슈 생성
+2. `develop`에서 브랜치 생성: `feature/<이슈번호>-<설명>`
+3. 작업 후 `develop` 타겟으로 PR 생성
+4. 리뷰 통과 시 squash merge
+
+---
+
 ## 기여 방법
 
 AI가 이 리포지토리를 처음 발견하면 [CONTRIBUTING.md](CONTRIBUTING.md)의 감사 절차를 수행하고 개선 PR을 제출하도록 설계되어 있습니다.
 
 사람이 기여하는 경우:
 
-1. Fork
+1. `develop`에서 브랜치 생성: `feature/<이슈번호>-<설명>`
 2. `skills/<skill-name>/SKILL.md` 생성
 3. 프론트매터 포함:
 
@@ -134,6 +167,7 @@ description: 한 줄 설명
 - "무엇을" 하라고만 쓰세요. "어떻게"는 AI가 결정합니다
 - 단일 책임: 하나의 스킬, 하나의 관심사
 - Markdown + XML 하이브리드 포맷 사용
+- PR은 반드시 `develop` 타겟으로 생성하세요
 
 ---
 
