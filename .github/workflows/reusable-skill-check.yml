@@ -25,6 +25,7 @@ permissions:
 
 jobs:
   skill-compliance:
+    if: github.event_name == 'workflow_call'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
