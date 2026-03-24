@@ -21,6 +21,7 @@ state transitions → before/after snapshot
 
 <constraints>
 - every AI model call must produce a trace entry
+- token counts must be extracted from the model API response metadata, not estimated or hardcoded — never use response length or character count as a token proxy
 - propagate trace context across service boundaries
 - attach a correlation ID to every trace
 - structured output only — no free-form strings

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.2] - 2026-03-24
+
+### Fixed
+- GitHub Actions push 이벤트 시 phantom failure runs 제거 — 각 job에 `if: github.event_name` 조건 추가로 push 시 `skipped` 처리
+
 ## [1.1.1] - 2026-03-24
 
 ### Fixed
