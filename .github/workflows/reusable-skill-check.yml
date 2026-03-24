@@ -1,0 +1,173 @@
+name: Skill Compliance Check (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      skills:
+        description: >
+          Comma-separated list of skills to enforce.
+          Defaults to: delivery-workflow,test-runner,coverage,security-audit
+        required: false
+        type: string
+        default: "delivery-workflow,test-runner,coverage,security-audit"
+      fail_on_violation:
+        description: Fail the workflow if skill violations are found
+        required: false
+        type: boolean
+        default: true
+    secrets:
+      GITHUB_TOKEN:
+        required: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  skill-compliance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch skill definitions
+        id: fetch-skills
+        run: |
+          SKILLS="${{ inputs.skills }}"
+          SKILL_CONTENT=""
+
+          for skill in $(echo "$SKILLS" | tr ',' ' '); do
+            skill=$(echo "$skill" | xargs)
+            URL="https://raw.githubusercontent.com/hjm/common-ai-skill/main/skills/${skill}/SKILL.md"
+            CONTENT=$(curl -sf "$URL" || echo "")
+            if [ -n "$CONTENT" ]; then
+              SKILL_CONTENT="${SKILL_CONTENT}\n\n### Skill: ${skill}\n${CONTENT}"
+            else
+              echo "Warning: could not fetch skill '${skill}'"
+            fi
+          done
+
+          echo "skill_content<<SKILLS_EOF" >> $GITHUB_OUTPUT
+          printf '%b' "$SKILL_CONTENT" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "SKILLS_EOF" >> $GITHUB_OUTPUT
+
+      - name: Get PR diff
+        run: git diff origin/${{ github.base_ref }}...HEAD > pr.diff
+
+      - name: Check skill compliance
+        id: compliance
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SKILL_CONTENT: ${{ steps.fetch-skills.outputs.skill_content }}
+        run: |
+          python3 - <<'PYEOF'
+          import os, json, urllib.request
+
+          diff = open("pr.diff").read()[:6000]
+          skills = os.environ.get("SKILL_CONTENT", "")[:4000]
+
+          if not diff.strip():
+              result = {"passed": True, "violations": [], "summary": "No changes to review."}
+          else:
+              system_prompt = f"""You are a code reviewer enforcing AI skill compliance.
+
+The project uses these skills as behavioral rules for development:
+
+{skills}
+
+Review the PR diff and check if the changes comply with the active skills.
+
+Focus on:
+- delivery-workflow: Does each commit serve a single purpose? Are tests included?
+- test-runner / coverage: Are new behaviors covered by tests?
+- security-audit: Any obvious security issues (secrets, injection, etc.)?
+- Other active skills: Does the code follow the skill's constraints?
+
+Respond ONLY with JSON:
+{{
+  "passed": true/false,
+  "violations": [
+    {{
+      "skill": "skill-name",
+      "description": "what was violated",
+      "suggestion": "how to fix it"
+    }}
+  ],
+  "summary": "one sentence summary"
+}}
+If no violations, violations must be empty and passed must be true.
+All output must be in English."""
+
+              payload = {{
+                "model": "gpt-4o-mini",
+                "messages": [
+                  {{"role": "system", "content": system_prompt}},
+                  {{"role": "user", "content": f"Review this PR diff for skill compliance:\n\n{{diff}}"}}
+                ],
+                "response_format": {{"type": "json_object"}}
+              }}
+
+              req = urllib.request.Request(
+                "https://models.inference.ai.azure.com/chat/completions",
+                data=json.dumps(payload).encode(),
+                headers={{
+                  "Authorization": f"Bearer {{os.environ['GITHUB_TOKEN']}}",
+                  "Content-Type": "application/json"
+                }}
+              )
+              with urllib.request.urlopen(req) as resp:
+                  raw = json.loads(resp.read())
+              result = json.loads(raw["choices"][0]["message"]["content"])
+
+          passed = str(result.get("passed", False)).lower()
+          summary = result.get("summary", "")
+          violations = result.get("violations", [])
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"passed={passed}\n")
+              f.write(f"summary={summary}\n")
+              v_lines = "\n".join(
+                  f"- **[{v.get('skill','?')}]** {v['description']}\n  > Fix: {v.get('suggestion','')}"
+                  for v in violations
+              ) if violations else "None"
+              f.write(f"violations={v_lines}\n")
+
+          print(f"passed={passed}, violations={len(violations)}")
+          PYEOF
+
+      - name: Post compliance result
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PASSED="${{ steps.compliance.outputs.passed }}"
+          SUMMARY="${{ steps.compliance.outputs.summary }}"
+          VIOLATIONS="${{ steps.compliance.outputs.violations }}"
+          SKILLS="${{ inputs.skills }}"
+
+          if [ "$PASSED" = "true" ]; then
+            ICON="✅"
+            STATUS="Passed"
+          else
+            ICON="❌"
+            STATUS="Violations found"
+          fi
+
+          gh pr comment ${{ github.event.pull_request.number }} --body "## Skill Compliance Check $ICON
+
+**Result:** $STATUS
+**Enforced skills:** \`$SKILLS\`
+**Summary:** $SUMMARY
+
+**Violations:**
+$VIOLATIONS
+
+---
+*Powered by [common-ai-skill](https://github.com/hjm/common-ai-skill)*"
+
+      - name: Fail if violations found
+        if: inputs.fail_on_violation && steps.compliance.outputs.passed != 'true'
+        run: |
+          echo "Skill compliance check failed. See PR comment for details."
+          exit 1

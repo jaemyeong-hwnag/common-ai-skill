@@ -1,0 +1,25 @@
+{
+  "name": "common-ai-skill",
+  "version": "1.1.0",
+  "description": "Abstract skill library for any AI — delivery, testing, architecture, security, and more",
+  "keywords": ["ai", "claude", "skills", "llm", "prompt", "engineering"],
+  "license": "MIT",
+  "bin": {
+    "common-ai-skill": "./bin/init.js"
+  },
+  "files": [
+    "skills/",
+    "bin/",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node test/init.test.js"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hjm/common-ai-skill.git"
+  }
+}

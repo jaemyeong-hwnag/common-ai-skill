@@ -2,8 +2,8 @@
 
 # common-ai-skil
 
-**AI를 위한 추상 스킬 라이브러리**
-**Abstract skill library — for any AI**
+**스킬 = 인터페이스. AI = 구현체.**
+**Skills are interfaces. AI is the implementation.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -13,11 +13,21 @@
 
 ## 이 프로젝트는 무엇인가요?
 
-`common-ai-skil`은 AI가 소프트웨어를 개발할 때 따르는 **행동 지침(스킬)** 모음입니다.
+**스킬은 인터페이스입니다. AI가 구현체입니다.**
+
+스킬은 **무엇을(WHAT)** 달성해야 하는지만 정의합니다. **어떻게(HOW)** 는 AI가 프로젝트를 분석해서 결정합니다.
+
+```
+skill: "run tests before commit"        ← 인터페이스 (불변)
+  → Node 프로젝트: npm test             ← AI가 결정한 구현
+  → Python 프로젝트: pytest             ← AI가 결정한 구현
+  → Rust 프로젝트: cargo test           ← AI가 결정한 구현
+```
+
+도구가 바뀌어도 스킬은 바뀌지 않습니다. AI가 어댑터입니다.
 
 - 특정 언어, 프레임워크, 프로젝트에 종속되지 않습니다
 - **모든 AI** (Claude, GPT, Gemini, Llama, DeepSeek 등)에서 사용 가능합니다
-- AI가 스킬을 읽고, 현재 프로젝트를 분석한 뒤, **스스로 적용 방법을 결정**합니다
 - 사람이 할 일: 설치만 하면 됩니다
 
 > **목표:** 한 번 설치하면 어떤 프로젝트에서든, 어떤 AI든 알아서 적용합니다.
@@ -108,13 +118,46 @@ done
 
 ---
 
+## 브랜치 및 PR 규칙 (Git Flow)
+
+이 프로젝트는 **git flow**를 따릅니다.
+
+### 브랜치 구조
+
+```
+main        ← 배포 전용. 직접 push 금지.
+  └─ develop ← 통합 브랜치. 직접 push 금지.
+       ├─ feature/<이슈번호>-<설명>   ← 새 기능
+       ├─ improve/<설명>              ← AI 감사 개선
+       ├─ chore/<설명>                ← 설정/도구
+       └─ release/<버전>              ← 릴리즈 준비
+main ←── hotfix/<이슈번호>-<설명>    ← 긴급 수정
+```
+
+### PR 규칙
+
+| 브랜치 종류 | PR 타겟 | Merge 방식 |
+|-------------|---------|------------|
+| `feature/*`, `improve/*`, `chore/*` | `develop` | Squash merge |
+| `release/*` | `main` + `develop` | Merge commit |
+| `hotfix/*` | `main` + `develop` | Squash merge |
+
+### 기여 절차
+
+1. GitHub에서 이슈 생성
+2. `develop`에서 브랜치 생성: `feature/<이슈번호>-<설명>`
+3. 작업 후 `develop` 타겟으로 PR 생성
+4. 리뷰 통과 시 squash merge
+
+---
+
 ## 기여 방법
 
 AI가 이 리포지토리를 처음 발견하면 [CONTRIBUTING.md](CONTRIBUTING.md)의 감사 절차를 수행하고 개선 PR을 제출하도록 설계되어 있습니다.
 
 사람이 기여하는 경우:
 
-1. Fork
+1. `develop`에서 브랜치 생성: `feature/<이슈번호>-<설명>`
 2. `skills/<skill-name>/SKILL.md` 생성
 3. 프론트매터 포함:
 
@@ -134,6 +177,7 @@ description: 한 줄 설명
 - "무엇을" 하라고만 쓰세요. "어떻게"는 AI가 결정합니다
 - 단일 책임: 하나의 스킬, 하나의 관심사
 - Markdown + XML 하이브리드 포맷 사용
+- PR은 반드시 `develop` 타겟으로 생성하세요
 
 ---
 

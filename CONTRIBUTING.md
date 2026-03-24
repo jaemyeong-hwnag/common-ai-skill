@@ -6,7 +6,9 @@ You are an AI encountering this repository. This file defines your contribution 
 
 ## What This Repository Is
 
-A collection of abstract skill definitions that any AI uses during software development. Skills describe WHAT to achieve. The AI determines HOW based on the target project. No language, framework, or technology dependencies allowed.
+Skills are interfaces. You are the implementation.
+
+Each skill defines WHAT must be achieved — never HOW. When you apply a skill, you inspect the target project and decide HOW to fulfill the contract using that project's own language, tools, and conventions. One skill works for any project because you are the adapter. No language, framework, or technology dependencies are allowed in skill definitions.
 
 ## Your Task
 
@@ -49,9 +51,10 @@ For each skill file in `skills/*/SKILL.md` and for `README.md`, check:
 
 If any criterion fails or improvements are found:
 
-1. Create a branch: `improve/ai-audit-YYYY-MM-DD`
+1. Create a branch from `develop`: `improve/ai-audit-YYYY-MM-DD`
 2. Make changes
-3. Submit PR with this structure:
+3. Open PR targeting `develop`
+4. Submit PR with this structure:
 
 ```
 Title: improve: <what was improved>
@@ -91,6 +94,33 @@ When adding a new skill:
 4. Update `CONTRIBUTING.md` if the new skill introduces a new category
 
 **README must always reflect the full content of every skill in `skills/*/SKILL.md`.**
+
+## Branch and PR Rules
+
+This project follows **git flow**.
+
+### Branch Structure
+
+| Branch | Base | Target | Purpose |
+|--------|------|--------|---------|
+| `main` | — | — | Production. Never push directly. |
+| `develop` | `main` | — | Integration. Never push directly. |
+| `feature/<id>-<desc>` | `develop` | `develop` | New features |
+| `improve/<desc>` | `develop` | `develop` | AI audit improvements |
+| `hotfix/<id>-<desc>` | `main` | `main` + `develop` | Urgent production fixes |
+| `release/<version>` | `develop` | `main` + `develop` | Release preparation |
+| `chore/<desc>` | `develop` | `develop` | Config, tooling, housekeeping |
+
+### Rules
+
+<constraints>
+- all PRs must target `develop`, except `hotfix/*` and `release/*` which target `main`
+- branch from `develop` for all new work; branch from `main` only for hotfixes
+- squash merge for `feature/*`, `improve/*`, `chore/*`
+- merge commit for `release/*` and `hotfix/*` (preserves release boundary in history)
+- never push directly to `main` or `develop`
+- branch name must include issue ID when one exists: `feature/<id>-<description>`
+</constraints>
 
 ## What NOT to Change
 
