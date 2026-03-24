@@ -3,12 +3,19 @@ name: AI PR Review & Auto-merge
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  push:
 
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
+  noop:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "push event — no action needed"
+
   skill-abstraction-check:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
