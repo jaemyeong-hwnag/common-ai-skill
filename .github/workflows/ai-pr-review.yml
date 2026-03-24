@@ -3,13 +3,21 @@ name: AI PR Review & Auto-merge
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  push:
 
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
+  noop:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "ok"
+
   skill-abstraction-check:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -34,6 +42,7 @@ jobs:
         if: steps.detect.outputs.has_skills == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SKILL_FILES: ${{ steps.detect.outputs.files }}
         run: |
           python3 - <<'EOF'
           import os, json, urllib.request
@@ -130,8 +139,6 @@ jobs:
 
           print(f"passed={passed}, violations={len(violations)}")
           EOF
-        env:
-          SKILL_FILES: ${{ steps.detect.outputs.files }}
 
       - name: Post abstraction check result
         if: steps.detect.outputs.has_skills == 'true'
@@ -168,8 +175,8 @@ jobs:
 
   ai-review:
     if: always() && github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
     needs: skill-abstraction-check
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -267,9 +274,7 @@ jobs:
           gh pr comment ${{ github.event.pull_request.number }} --body-file /tmp/comment.md
 
       - name: Enable auto-merge if approved
-        if: |
-          steps.review.outputs.approved == 'true' &&
-          needs.skill-abstraction-check.result != 'failure'
+        if: steps.review.outputs.approved == 'true' && needs.skill-abstraction-check.result != 'failure'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

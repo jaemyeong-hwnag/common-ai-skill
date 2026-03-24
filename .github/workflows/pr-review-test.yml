@@ -1,0 +1,55 @@
+name: PR Review Test (minimal)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  noop:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "ok"
+
+  pr-check:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 - <<'EOF'
+          import os, json, urllib.request
+
+          CRITERIA = """
+          Respond ONLY with JSON:
+          {
+            "passed": true/false,
+            "violations": [{"file": "path", "line": "x", "reason": "y", "rule": "hard"}],
+            "summary": "one sentence in English"
+          }
+          If no violations, violations must be empty and passed must be true.
+          """
+
+          result = {"passed": True, "violations": [], "summary": "ok"}
+          passed = str(result.get("passed", False)).lower()
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"passed={passed}\n")
+          EOF
+      - name: test bash group with expressions
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPROVED: ${{ github.event_name }}
+        run: |
+          STATUS="ok"
+          {
+            echo "## Test"
+            echo "**Status:** $STATUS"
+          } > /tmp/out.md
+          gh pr comment ${{ github.event.pull_request.number }} --body-file /tmp/out.md
