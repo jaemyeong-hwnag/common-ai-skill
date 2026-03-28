@@ -300,8 +300,11 @@ jobs:
           with open(os.environ["GITHUB_OUTPUT"], "a") as f:
             f.write(f"approved={approved}\n")
             f.write(f"summary={summary}\n")
-            issues_text = "\n".join(f"- {i}" for i in issues) if issues else "None"
-            f.write(f"issues={issues_text}\n")
+
+          # Write issues to file to avoid multiline GITHUB_OUTPUT format errors
+          issues_text = "\n".join(f"- {i}" for i in issues) if issues else "None"
+          with open("/tmp/review_issues.txt", "w") as f:
+            f.write(issues_text)
 
           print(f"approved={approved}, summary={summary}")
           EOF
@@ -314,7 +317,6 @@ jobs:
         run: |
           APPROVED="${{ steps.review.outputs.approved }}"
           SUMMARY="${{ steps.review.outputs.summary }}"
-          ISSUES="${{ steps.review.outputs.issues }}"
 
           if [ "$APPROVED" = "true" ]; then
             ICON="✅"; STATUS="Approved"
@@ -329,7 +331,7 @@ jobs:
             echo "**Summary:** $SUMMARY"
             echo ""
             echo "**Issues:**"
-            echo "$ISSUES"
+            cat /tmp/review_issues.txt
 
             # Warn if upstream checks failed — auto-merge will be blocked
             if [ "$BRANCH_CHECK" = "failure" ] || [ "$ABSTRACTION_CHECK" = "failure" ]; then
