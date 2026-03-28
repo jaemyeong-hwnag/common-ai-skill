@@ -1,11 +1,11 @@
 {
-  "name": "common-ai-skill",
+  "name": "ai-skill-interface",
   "version": "1.3.0",
-  "description": "Abstract skill library for any AI — delivery, testing, architecture, security, and more",
-  "keywords": ["ai", "claude", "skills", "llm", "prompt", "engineering"],
+  "description": "Abstract skill interfaces for AI — delivery, testing, architecture, security, and more. Skills define WHAT; AI decides HOW.",
+  "keywords": ["ai", "claude", "skills", "llm", "prompt", "engineering", "interface", "abstract"],
   "license": "MIT",
   "bin": {
-    "common-ai-skill": "./bin/init.js"
+    "ai-skill-interface": "./bin/init.js"
   },
   "files": [
     "skills/",

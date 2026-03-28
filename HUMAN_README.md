@@ -1,6 +1,6 @@
 <div align="center">
 
-# common-ai-skil
+# ai-skill-interface
 
 **스킬 = 인터페이스. AI = 구현체.**
 **Skills are interfaces. AI is the implementation.**
@@ -63,7 +63,7 @@ skill: "run tests before commit"        ← 인터페이스 (불변)
 ### 방법 1: npm (권장)
 
 ```bash
-npx common-ai-skill
+npx ai-skill-interface
 ```
 
 `~/.claude/skills/`에 17개 스킬이 설치됩니다. 모든 프로젝트에서 공유됩니다.
@@ -71,13 +71,13 @@ npx common-ai-skill
 ### 방법 2: pip
 
 ```bash
-pip install common-ai-skill && common-ai-skill
+pip install ai-skill-interface && ai-skill-interface
 ```
 
 ### 방법 3: git submodule (팀 프로젝트, 버전 고정)
 
 ```bash
-curl -sL https://raw.githubusercontent.com/jaemyeong-hwnag/common-ai-skill/main/scripts/submodule-install.sh | sh
+curl -sL https://raw.githubusercontent.com/jaemyeong-hwnag/ai-skill-interface/main/scripts/submodule-install.sh | sh
 ```
 
 프로젝트에 `.skills/` 서브모듈 + `CLAUDE.md` 자동 임포트가 추가됩니다.
@@ -112,7 +112,7 @@ curl -sL https://raw.githubusercontent.com/jaemyeong-hwnag/common-ai-skill/main/
 프로젝트에서 필요한 스킬이 없으면 Claude Code에게:
 
 ```
-"common-ai-skill 레포에 <필요한 스킬> 이슈 발행하고 PR까지 올려줘"
+"ai-skill-interface 레포에 <필요한 스킬> 이슈 발행하고 PR까지 올려줘"
 ```
 
 AI가 자동으로: 이슈 생성 → 브랜치 → SKILL.md 작성 → PR → AI 리뷰 → 머지까지 처리합니다.
@@ -120,7 +120,7 @@ AI가 자동으로: 이슈 생성 → 브랜치 → SKILL.md 작성 → PR → A
 ### 스킬 업데이트
 
 ```bash
-npx common-ai-skill   # 또는 pip 재실행
+npx ai-skill-interface   # 또는 pip 재실행
 ```
 
 최신 버전의 스킬로 덮어씁니다.
