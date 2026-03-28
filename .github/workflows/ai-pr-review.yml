@@ -7,6 +7,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write
   models: read
 
 jobs:
@@ -338,9 +339,39 @@ jobs:
             STRATEGY="--rebase"
           fi
 
-          gh pr merge "${{ github.event.pull_request.number }}" \
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+
+          gh pr merge "$PR_NUMBER" \
             --auto \
             $STRATEGY \
             --delete-branch
 
           echo "Auto-merge ($STRATEGY) enabled for $BRANCH"
+
+          # Close linked issues after merge completes
+          # (close-issues-on-merge.yml can't trigger because GITHUB_TOKEN events
+          #  don't cascade to other workflows — so close issues inline here)
+          for i in 1 2 3 4 5 6; do
+            sleep 10
+            STATE=$(gh pr view "$PR_NUMBER" --json state --jq '.state')
+            if [ "$STATE" = "MERGED" ]; then
+              echo "PR merged. Closing linked issues..."
+
+              # Extract issue IDs from branch name and PR body
+              BRANCH_ISSUE=$(echo "$BRANCH" | grep -oE '/[0-9]+' | head -1 | tr -d '/')
+              PR_BODY=$(gh pr view "$PR_NUMBER" --json body --jq '.body')
+              BODY_ISSUES=$(echo "$PR_BODY" \
+                | grep -ioE '(closes?|fixe?s?d?|resolves?d?)\s+#[0-9]+' \
+                | grep -oE '#[0-9]+' | tr -d '#' | sort -u)
+              ALL_ISSUES=$(printf '%s\n%s' "$BRANCH_ISSUE" "$BODY_ISSUES" \
+                | grep -v '^$' | sort -u)
+
+              for ISSUE in $ALL_ISSUES; do
+                gh issue close "$ISSUE" --reason completed \
+                  --comment "Closed by PR #${PR_NUMBER} merged into \`${{ github.base_ref }}\`." || true
+                echo "Closed issue #${ISSUE}"
+              done
+              break
+            fi
+            echo "Waiting for merge... ($i/6)"
+          done
