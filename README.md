@@ -11,20 +11,39 @@ One skill works for any project, any language, any AI — because you are the ad
 
 Each skill lives in `skills/<name>/SKILL.md`. When an AI reads this repository, it loads the relevant skill files directly. The README serves as the index and auto-selection guide; each skill's full definition is below and in its own file.
 
+## Context Signals
+
+Detect these signals before selecting skills:
+
+```
+change.type    : code | ai-feature | explicit
+change.scope   : core-logic | interface | infra | test | docs
+arch.pattern   : hexagonal | layered | none
+quality.status : no-tests | low-coverage | high-coverage
+ai.complexity  : single-call | pipeline | stateful | multi-agent
+action.risk    : reversible | irreversible
+```
+
 ## Auto-Selection
 
 ```
-code changed → delivery-workflow
-            + hexagonal-development (if layered arch)
-            + interface-first-development (if abstraction change)
-            → finalize (after completion)
-AI feature   → framework-selection (before choosing tools)
-            + rag-development (if retrieval pipeline)
-            + observability (if AI model calls)
-            + evaluation (if quality measurement needed)
-            + human-in-the-loop (if irreversible actions)
-            + agent-orchestration (if multi-agent)
-explicit    → /version /security-audit /principle-audit /ai-token-optimize /coverage /test-runner /finalize
+change.type=code
+  → delivery-workflow
+  + hexagonal-development   (arch.pattern=hexagonal or layered)
+  + interface-first-development (change.scope=interface)
+  → finalize                (after completion)
+
+change.type=ai-feature
+  → framework-selection     (always first)
+  + rag-development         (retrieval pipeline present)
+  + observability           (ai.complexity≥pipeline)
+  + evaluation              (quality measurement needed)
+  + human-in-the-loop       (action.risk=irreversible)
+  + agent-orchestration     (ai.complexity=multi-agent)
+
+change.type=explicit
+  → /version /security-audit /principle-audit /ai-token-optimize
+    /coverage /test-runner /finalize /skill-propose /skill-install /skill-update
 ```
 
 ## Composition
@@ -32,6 +51,10 @@ explicit    → /version /security-audit /principle-audit /ai-token-optimize /co
 ```
 finalize = test-runner + coverage + docs-sync + delivery-workflow(commit)
 ```
+
+## Dependency Order
+
+Apply required skills before dependent skills. Detect `requires:` in each SKILL.md frontmatter and resolve in dependency order before execution.
 
 ---
 
