@@ -63,17 +63,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Detect changed SKILL.md files
+      - name: Detect changed SKILL.md files and extract diff
         id: detect
         run: |
           FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep 'SKILL\.md' || true)
-          echo "files<<EOF" >> $GITHUB_OUTPUT
-          echo "$FILES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
           if [ -z "$FILES" ]; then
             echo "has_skills=false" >> $GITHUB_OUTPUT
           else
             echo "has_skills=true" >> $GITHUB_OUTPUT
+            # Extract only the diff of SKILL.md files (not full content)
+            git diff origin/${{ github.base_ref }}...HEAD -- $FILES > /tmp/skill_diff.txt
           fi
 
       - name: Check abstraction compliance
@@ -81,52 +80,30 @@ jobs:
         if: steps.detect.outputs.has_skills == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SKILL_FILES: ${{ steps.detect.outputs.files }}
         run: |
           python3 - <<'EOF'
           import os, json, urllib.request
 
           CRITERIA = """
-          You are reviewing SKILL.md files for abstraction and format compliance.
+          You are reviewing CHANGES to SKILL.md files for abstraction compliance.
+          You will receive ONLY the diff (changed lines). Do NOT judge unchanged content.
           All output must be in English.
 
-          HARD rules — always reject if violated:
+          HARD rules — reject if a NEWLY ADDED or MODIFIED line violates:
           1. No specific language, library, framework, tool, command, or file path.
           2. Rules describe WHAT must be true — not HOW to achieve it.
           3. Single responsibility — one skill, one concern.
 
-          IMPORTANT — what is NOT a HARD violation:
-          - Domain-level abstract concepts are allowed even if they sound technical.
-            Examples that are ACCEPTABLE: "agent", "sub-agent", "orchestrator",
-            "message", "embedding", "retrieval", "coverage target", "evaluator",
-            "adapter", "port", "layer", "inbound", "outbound", "correlation ID".
-          - These are architectural or domain vocabulary, NOT references to a
-            specific language, library, framework, tool, or command.
-          - Numeric thresholds (e.g., "80%") are acceptable when they define a
-            measurable goal, not a technology-specific constant.
-          - Only flag a term as HARD violation if it names a concrete product,
-            library, language, CLI command, or file path (e.g., "Jest", "Python",
-            "npm test", "src/index.ts").
+          What is NOT a violation:
+          - Domain-level abstract concepts: "agent", "orchestrator", "embedding",
+            "retrieval", "coverage target", "adapter", "port", "layer", "commit",
+            "correlation ID", numeric thresholds (e.g., "80%").
+          - Frontmatter fields: "requires:", "name:", "description:" are metadata.
+          - Only flag terms naming a concrete product, library, language, CLI command,
+            or file path (e.g., "Jest", "Python", "npm test", "src/index.ts").
 
-          STRUCTURAL rules — evaluated against AI prompt engineering research:
-          Current convention: single <constraints> block, single <criteria> block,
-          no WHY explanations inside <constraints>.
-          A structural change is APPROVED only if it is demonstrably more optimal or
-          efficient for an AI reader, supported by prompt engineering research — e.g.:
-          - tagged sections reducing hallucination (structured prompting research)
-          - XML/semantic markup improving instruction-following accuracy
-          - chain-of-thought or role-separation patterns from published papers
-          - compression or positional encoding findings improving token efficiency
-          If unsure, REJECT.
-
-          LANGUAGE rules — evaluated against AI comprehension research:
-          Default language is English. A non-English or non-natural-language format
-          (structured notation, symbolic representation, formal encoding) is APPROVED
-          only if research or evidence shows it produces measurably better AI
-          comprehension, instruction-following, or token efficiency than English prose.
-          Human readability is NOT a criterion — AI optimality is.
-          If unsure, English is correct. REJECT non-English natural language with no
-          research justification.
+          STRUCTURAL rules — reject only if a changed line breaks the convention:
+          single <constraints> block, single <criteria> block.
 
           Respond ONLY with JSON:
           {
@@ -134,7 +111,7 @@ jobs:
             "violations": [
               {
                 "file": "path/to/SKILL.md",
-                "line": "exact line or snippet",
+                "line": "exact added/modified line",
                 "reason": "explanation",
                 "rule": "hard|structural|language"
               }
@@ -144,22 +121,16 @@ jobs:
           If no violations, violations must be empty and passed must be true.
           """
 
-          files = os.environ["SKILL_FILES"].strip().split("\n")
-          contents = {}
-          for f in files:
-              if f and os.path.exists(f):
-                  contents[f] = open(f).read()
+          diff = open("/tmp/skill_diff.txt").read()[:8000]
 
-          if not contents:
-              result = {"passed": True, "violations": [], "summary": "No skill files to check."}
+          if not diff.strip():
+              result = {"passed": True, "violations": [], "summary": "No skill changes to check."}
           else:
-              skills_text = "\n\n".join(f"### {k}\n{v}" for k, v in contents.items())
-
               payload = {
                 "model": "gpt-4o-mini",
                 "messages": [
                   {"role": "system", "content": CRITERIA},
-                  {"role": "user", "content": f"Check these SKILL.md files:\n\n{skills_text[:8000]}"}
+                  {"role": "user", "content": f"Check ONLY the added/modified lines in this SKILL.md diff:\n\n{diff}"}
                 ],
                 "response_format": {"type": "json_object"}
               }
