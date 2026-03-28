@@ -57,23 +57,30 @@ jobs:
           BASE: ${{ steps.meta.outputs.base }}
           TITLE: ${{ steps.meta.outputs.title }}
         run: |
-          # Idempotent: skip if PR already exists for this branch
+          # Idempotent: skip if PR already exists for this branch (any state)
           EXISTING=$(gh pr list \
             --head "$BRANCH" \
-            --base "$BASE" \
             --json number \
             --jq '.[0].number' 2>/dev/null || echo "")
 
           if [ -n "$EXISTING" ]; then
-            echo "PR #$EXISTING already exists for $BRANCH → $BASE — skipping."
+            echo "PR #$EXISTING already exists for $BRANCH — skipping."
             exit 0
           fi
 
-          gh pr create \
+          # Create PR; treat "already exists" as success to handle race conditions
+          if ! gh pr create \
             --head "$BRANCH" \
             --base "$BASE" \
             --title "$TITLE" \
             --body-file ".github/pull_request_template.md" \
-            --draft
+            --draft 2>&1 | tee /tmp/pr_create.log; then
+            if grep -q "already exists" /tmp/pr_create.log; then
+              echo "PR already exists (race condition) — skipping."
+              exit 0
+            fi
+            cat /tmp/pr_create.log
+            exit 1
+          fi
 
           echo "Draft PR created: \"$TITLE\" ($BRANCH → $BASE)"
