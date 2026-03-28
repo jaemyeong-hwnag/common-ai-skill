@@ -1,0 +1,66 @@
+name: Close linked issues on PR merge
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  issues: write
+  pull-requests: read
+
+jobs:
+  close-issues:
+    name: Close issues referenced in merged PR
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Parse PR body and close linked issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+        run: |
+          # Extract issue numbers from branch name (e.g. feature/45-description → 45)
+          BRANCH="${{ github.head_ref }}"
+          BRANCH_ISSUE=$(echo "$BRANCH" | grep -oE '/[0-9]+' | head -1 | tr -d '/')
+
+          # Extract issue numbers from closing keywords in PR body
+          BODY_ISSUES=$(echo "$PR_BODY" \
+            | grep -ioE '(closes?|fixe?s?d?|resolves?d?)\s+#[0-9]+' \
+            | grep -oE '#[0-9]+' \
+            | tr -d '#' \
+            | sort -u)
+
+          # Combine and deduplicate
+          ALL_ISSUES=$(printf '%s\n%s' "$BRANCH_ISSUE" "$BODY_ISSUES" \
+            | grep -v '^$' | sort -u)
+
+          if [ -z "$ALL_ISSUES" ]; then
+            echo "No linked issues found in PR #${PR_NUMBER}"
+            exit 0
+          fi
+
+          echo "Found linked issues: $ALL_ISSUES"
+
+          for ISSUE in $ALL_ISSUES; do
+            echo "Closing issue #${ISSUE}..."
+
+            {
+              echo "Closed by PR #${PR_NUMBER}: **${PR_TITLE}** merged into \`${BASE_BRANCH}\`."
+              echo ""
+              echo "${PR_URL}"
+            } > /tmp/close_comment.md
+
+            gh issue comment "$ISSUE" \
+              --repo "${{ github.repository }}" \
+              --body-file /tmp/close_comment.md || true
+
+            gh issue close "$ISSUE" \
+              --repo "${{ github.repository }}" \
+              --reason "completed" || true
+
+            echo "Issue #${ISSUE} closed."
+          done
