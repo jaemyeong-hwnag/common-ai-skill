@@ -49,7 +49,7 @@ withTempDir((homeDir) => {
   console.log("✓ idempotent — re-run does not duplicate");
 });
 
-// Test 3: all 17 skills are installed
+// Test 3: all 20 skills are installed
 withTempDir((homeDir) => {
   runInit(homeDir);
   const dest = skillsDir(homeDir);
@@ -71,6 +71,9 @@ withTempDir((homeDir) => {
     "evaluation",
     "human-in-the-loop",
     "agent-orchestration",
+    "skill-propose",
+    "skill-install",
+    "skill-update",
   ];
   for (const skill of expected) {
     assert.ok(
