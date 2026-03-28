@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.5] - 2026-03-28
+
+### Added
+- GitHub issue templates: feature / bug / improve / hotfix
+- PR template with principle checklist
+- `issue-branch.yml`: auto-create branch with issue ID when issue is labeled
+- `auto-pr.yml`: auto-create draft PR on first branch push
+- `release-merge.yml`: auto-merge release/* PRs (merge commit) + back-merge main → develop
+- `ai-pr-review.yml`: branch-name validation (issue ID required), formal `request-changes` on principle violation, rebase merge for feature/fix/improve/chore, merge commit for release/hotfix
+
 ## [1.1.4] - 2026-03-24
 
 ### Fixed

@@ -16,7 +16,54 @@ jobs:
     steps:
       - run: echo "ok"
 
+  # ── Job 1: Branch name must include issue ID ─────────────────────────────
+  branch-name-check:
+    name: Validate branch name (issue ID required)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch name contains issue ID
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          # release/* branches use version as identifier — exempt
+          if echo "$BRANCH" | grep -qE '^release/'; then
+            echo "Release branch — issue ID check skipped: $BRANCH"
+            exit 0
+          fi
+
+          # All work branches must match: <type>/<number>-<description>
+          if echo "$BRANCH" | grep -qE '^(feature|fix|hotfix|improve|chore)/[0-9]+-[a-z0-9]'; then
+            echo "Branch name valid: $BRANCH"
+            exit 0
+          fi
+
+          gh pr comment "${{ github.event.pull_request.number }}" --body \
+            "## Branch Name Violation ❌
+
+Branch \`${BRANCH}\` does not include a GitHub issue ID.
+
+**Required format:** \`<type>/<issue-id>-<description>\`
+| Type | Target | Example |
+|------|--------|---------|
+| \`feature\` | develop | \`feature/27-add-new-skill\` |
+| \`fix\` | develop | \`fix/31-broken-installer\` |
+| \`hotfix\` | main | \`hotfix/33-npm-publish-fail\` |
+| \`improve\` | develop | \`improve/29-token-efficiency\` |
+| \`chore\` | develop | \`chore/30-update-ci\` |
+
+Rename the branch and re-open the PR."
+
+          gh pr review "${{ github.event.pull_request.number }}" \
+            --request-changes \
+            --body "Branch \`${BRANCH}\` must include a GitHub issue ID: \`<type>/<issue-id>-<description>\`"
+
+          exit 1
+
+  # ── Job 2: Skill abstraction check — core project principle ─────────────
   skill-abstraction-check:
+    name: Skill abstraction & principle check
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
@@ -140,7 +187,7 @@ jobs:
           print(f"passed={passed}, violations={len(violations)}")
           EOF
 
-      - name: Post abstraction check result
+      - name: Post result and formally reject if violated
         if: steps.detect.outputs.has_skills == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -150,11 +197,9 @@ jobs:
           VIOLATIONS="${{ steps.abstraction.outputs.violations }}"
 
           if [ "$PASSED" = "true" ]; then
-            ICON="✅"
-            STATUS="Passed"
+            ICON="✅"; STATUS="Passed"
           else
-            ICON="❌"
-            STATUS="Violations detected"
+            ICON="❌"; STATUS="Violations detected"
           fi
 
           {
@@ -169,13 +214,25 @@ jobs:
             echo "---"
             echo "*HARD: no tool/lang specifics · What-not-How · single responsibility*"
             echo "*STRUCTURAL: format changes approved only if justified by prompt engineering research*"
-            echo "*LANGUAGE: English default · non-English or non-natural-language approved only if measurably better for AI*"
+            echo "*LANGUAGE: English default · non-English approved only if measurably better for AI*"
           } > /tmp/comment.md
-          gh pr comment ${{ github.event.pull_request.number }} --body-file /tmp/comment.md
+          gh pr comment "${{ github.event.pull_request.number }}" --body-file /tmp/comment.md
 
+          if [ "$PASSED" != "true" ]; then
+            # Formally request changes — blocks merge
+            gh pr review "${{ github.event.pull_request.number }}" \
+              --request-changes \
+              --body "**Core principle violated:** ${SUMMARY}
+
+Skills must be technology-agnostic interfaces that define WHAT, not HOW. See the Abstraction Check comment for specific violations. Fix all HARD violations before this PR can be merged."
+            exit 1
+          fi
+
+  # ── Job 3: AI code review + auto-merge ──────────────────────────────────
   ai-review:
+    name: AI code review
     if: always() && github.event_name == 'pull_request'
-    needs: skill-abstraction-check
+    needs: [branch-name-check, skill-abstraction-check]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -252,11 +309,9 @@ jobs:
           ISSUES="${{ steps.review.outputs.issues }}"
 
           if [ "$APPROVED" = "true" ]; then
-            ICON="✅"
-            STATUS="Approved"
+            ICON="✅"; STATUS="Approved"
           else
-            ICON="❌"
-            STATUS="Changes requested"
+            ICON="❌"; STATUS="Changes requested"
           fi
 
           {
@@ -271,14 +326,28 @@ jobs:
             echo "---"
             echo "*Analyzed by [GitHub Models](https://github.com/marketplace/models) (gpt-4o-mini)*"
           } > /tmp/comment.md
-          gh pr comment ${{ github.event.pull_request.number }} --body-file /tmp/comment.md
+          gh pr comment "${{ github.event.pull_request.number }}" --body-file /tmp/comment.md
 
-      - name: Enable auto-merge if approved
-        if: steps.review.outputs.approved == 'true' && needs.skill-abstraction-check.result != 'failure'
+      - name: Auto-merge if approved (rebase / merge commit by branch type)
+        if: |
+          steps.review.outputs.approved == 'true' &&
+          needs.skill-abstraction-check.result != 'failure' &&
+          needs.branch-name-check.result != 'failure'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ github.head_ref }}
         run: |
-          gh pr merge ${{ github.event.pull_request.number }} \
+          # release/* and hotfix/* → merge commit (preserves release boundary in history)
+          # all other branches   → rebase  (linear graph, no merge bubbles)
+          if echo "$BRANCH" | grep -qE '^(release|hotfix)/'; then
+            STRATEGY="--merge"
+          else
+            STRATEGY="--rebase"
+          fi
+
+          gh pr merge "${{ github.event.pull_request.number }}" \
             --auto \
-            --squash \
+            $STRATEGY \
             --delete-branch
+
+          echo "Auto-merge ($STRATEGY) enabled for $BRANCH"

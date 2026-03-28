@@ -1,0 +1,27 @@
+name: Hotfix
+description: Urgent production fix — branches from main
+labels: ["hotfix"]
+body:
+  - type: textarea
+    id: issue
+    attributes:
+      label: Production Issue
+      description: What is broken in production? Include version if known.
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Who is affected and how severely?
+    validations:
+      required: true
+
+  - type: textarea
+    id: fix
+    attributes:
+      label: Proposed Fix
+      description: What needs to change?
+    validations:
+      required: true

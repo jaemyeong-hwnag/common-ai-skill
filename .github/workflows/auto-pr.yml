@@ -1,0 +1,86 @@
+name: Auto-create PR on Branch Push
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+      - 'fix/**'
+      - 'hotfix/**'
+      - 'improve/**'
+      - 'chore/**'
+      - 'release/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve base branch and PR title
+        id: meta
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          case "$BRANCH" in
+            feature/*)  BASE="develop"; TYPE="feat" ;;
+            fix/*)      BASE="develop"; TYPE="fix" ;;
+            improve/*)  BASE="develop"; TYPE="improve" ;;
+            chore/*)    BASE="develop"; TYPE="chore" ;;
+            release/*)  BASE="main";    TYPE="release" ;;
+            hotfix/*)   BASE="main";    TYPE="hotfix" ;;
+            *)
+              echo "No PR rule for branch: $BRANCH"
+              exit 0
+              ;;
+          esac
+
+          # Strip type prefix and leading issue-id from slug for title
+          # feature/27-add-new-skill → "add new skill"
+          DESC=$(echo "$BRANCH" \
+            | sed "s|^[^/]*/[0-9]*-||" \
+            | sed "s|^[^/]*/||" \
+            | tr '-' ' ')
+          TITLE="${TYPE}: ${DESC}"
+
+          echo "base=$BASE"   >> $GITHUB_OUTPUT
+          echo "title=$TITLE" >> $GITHUB_OUTPUT
+          echo "PR: $TITLE ($BRANCH -> $BASE)"
+
+      - name: Create draft PR if none exists
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ github.ref_name }}
+          BASE: ${{ steps.meta.outputs.base }}
+          TITLE: ${{ steps.meta.outputs.title }}
+        run: |
+          # Idempotent: skip if PR already exists for this branch (any state)
+          EXISTING=$(gh pr list \
+            --head "$BRANCH" \
+            --json number \
+            --jq '.[0].number' 2>/dev/null || echo "")
+
+          if [ -n "$EXISTING" ]; then
+            echo "PR #$EXISTING already exists for $BRANCH — skipping."
+            exit 0
+          fi
+
+          # Create PR; treat "already exists" as success to handle race conditions
+          if ! gh pr create \
+            --head "$BRANCH" \
+            --base "$BASE" \
+            --title "$TITLE" \
+            --body-file ".github/pull_request_template.md" \
+            --draft 2>&1 | tee /tmp/pr_create.log; then
+            if grep -q "already exists" /tmp/pr_create.log; then
+              echo "PR already exists (race condition) — skipping."
+              exit 0
+            fi
+            cat /tmp/pr_create.log
+            exit 1
+          fi
+
+          echo "Draft PR created: \"$TITLE\" ($BRANCH → $BASE)"

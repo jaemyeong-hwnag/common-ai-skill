@@ -1,0 +1,89 @@
+name: Create Branch from Issue
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  create-branch:
+    runs-on: ubuntu-latest
+    # Only trigger for work-type labels
+    if: contains(fromJSON('["feature","fix","hotfix","improve","chore"]'), github.event.label.name)
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine branch name and base
+        id: branch
+        env:
+          LABEL: ${{ github.event.label.name }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+        run: |
+          # Sanitize title: lowercase, non-alphanumeric → dash, collapse dashes, trim
+          SLUG=$(echo "$ISSUE_TITLE" \
+            | tr '[:upper:]' '[:lower:]' \
+            | sed 's/[^a-z0-9]/-/g' \
+            | sed 's/-\{2,\}/-/g' \
+            | sed 's/^-//' \
+            | sed 's/-$//' \
+            | cut -c1-40)
+
+          # Branch name always includes issue ID: <type>/<id>-<slug>
+          case "$LABEL" in
+            feature) BRANCH="feature/${ISSUE_NUMBER}-${SLUG}"; BASE="develop" ;;
+            fix)     BRANCH="fix/${ISSUE_NUMBER}-${SLUG}";     BASE="develop" ;;
+            hotfix)  BRANCH="hotfix/${ISSUE_NUMBER}-${SLUG}";  BASE="main" ;;
+            improve) BRANCH="improve/${ISSUE_NUMBER}-${SLUG}"; BASE="develop" ;;
+            chore)   BRANCH="chore/${ISSUE_NUMBER}-${SLUG}";   BASE="develop" ;;
+          esac
+
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          echo "base=$BASE" >> $GITHUB_OUTPUT
+          echo "Branch: $BRANCH (from $BASE)"
+
+      - name: Create branch via GitHub API
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ steps.branch.outputs.branch }}
+          BASE: ${{ steps.branch.outputs.base }}
+        run: |
+          # Skip if branch already exists
+          if git ls-remote --exit-code --heads origin "$BRANCH" > /dev/null 2>&1; then
+            echo "Branch $BRANCH already exists — skipping."
+            exit 0
+          fi
+
+          BASE_SHA=$(git rev-parse "origin/$BASE")
+
+          gh api "repos/${{ github.repository }}/git/refs" \
+            --method POST \
+            --field ref="refs/heads/$BRANCH" \
+            --field sha="$BASE_SHA"
+
+          echo "Created: $BRANCH (from $BASE @ $BASE_SHA)"
+
+      - name: Comment on issue with branch info
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ steps.branch.outputs.branch }}
+          BASE: ${{ steps.branch.outputs.base }}
+        run: |
+          gh issue comment "${{ github.event.issue.number }}" --body \
+            "**Branch created:** \`${BRANCH}\` (based on \`${BASE}\`)
+
+Start working:
+\`\`\`bash
+git fetch origin
+git checkout ${BRANCH}
+\`\`\`
+
+When ready, push to trigger an auto-draft PR:
+\`\`\`bash
+git push origin ${BRANCH}
+\`\`\`"
