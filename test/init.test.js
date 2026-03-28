@@ -50,6 +50,7 @@ withTempDir((homeDir) => {
 });
 
 // Test 3: all 20 skills are installed
+// Test 3: all 18 skills are installed
 withTempDir((homeDir) => {
   runInit(homeDir);
   const dest = skillsDir(homeDir);
@@ -74,6 +75,7 @@ withTempDir((homeDir) => {
     "skill-propose",
     "skill-install",
     "skill-update",
+    "harness-engineering",
   ];
   for (const skill of expected) {
     assert.ok(

@@ -28,6 +28,7 @@ const SKILLS = [
   "skill-propose",
   "skill-install",
   "skill-update",
+  "harness-engineering",
 ];
 
 function run() {
