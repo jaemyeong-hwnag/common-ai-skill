@@ -2,24 +2,16 @@ name: AI PR Review & Auto-merge
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
-  push:
+    types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
-  noop:
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "ok"
-
   # ── Job 1: Branch name must include issue ID ─────────────────────────────
   branch-name-check:
     name: Validate branch name (issue ID required)
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Check branch name contains issue ID
@@ -64,7 +56,6 @@ Rename the branch and re-open the PR."
   # ── Job 2: Skill abstraction check — core project principle ─────────────
   skill-abstraction-check:
     name: Skill abstraction & principle check
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -231,7 +222,7 @@ Skills must be technology-agnostic interfaces that define WHAT, not HOW. See the
   # ── Job 3: AI code review + auto-merge ──────────────────────────────────
   ai-review:
     name: AI code review
-    if: always() && github.event_name == 'pull_request'
+    if: always()
     needs: [branch-name-check, skill-abstraction-check]
     runs-on: ubuntu-latest
     steps:
