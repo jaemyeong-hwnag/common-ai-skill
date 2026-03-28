@@ -51,8 +51,8 @@ change.type=explicit
 
 <constraints>
 - if a task requires a concern not covered by any installed skill, propose a new skill
-- proposal target: https://github.com/jaemyeong-hwnag/common-ai-skill
-- proposal method: create a GitHub issue with label "feature", then create a branch and PR with the new SKILL.md
+- proposal target: the repository that hosts this skill library (detect from git remote or package metadata)
+- proposal method: create an issue with label "feature" in the skill library repository, then create a branch and PR with the new SKILL.md
 - the proposed skill must follow all skill design rules: no technology references, WHAT not HOW, single responsibility
 - check installed skills first to avoid overlap before proposing
 </constraints>
