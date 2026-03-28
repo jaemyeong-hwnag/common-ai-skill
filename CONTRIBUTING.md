@@ -123,6 +123,26 @@ This project follows **git flow**.
 - branch name must include issue ID when one exists: `feature/<id>-<description>`
 </constraints>
 
+## Workflow Automation Setup
+
+The CI/CD pipeline requires a **Personal Access Token (PAT)** for full automation. Without it, two manual steps are needed: a second push to trigger PR review, and manual back-merge after release.
+
+### Creating the PAT
+
+1. Go to GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
+2. Generate new token with scopes: `repo`, `workflow`
+3. Add it as a repository secret named `PAT`:
+   ```bash
+   gh secret set PAT --body "<your-token>"
+   ```
+
+### What the PAT enables
+
+| Without PAT | With PAT |
+|---|---|
+| PR review needs second push | Review triggers on first push |
+| Release back-merge is manual | Back-merge + GitHub Release automatic |
+
 ## What NOT to Change
 
 - Do not add language-specific, framework-specific, or tool-specific content

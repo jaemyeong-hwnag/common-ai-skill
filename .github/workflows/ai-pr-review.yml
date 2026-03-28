@@ -333,7 +333,7 @@ jobs:
           needs.skill-abstraction-check.result != 'failure' &&
           needs.branch-name-check.result != 'failure'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
           BRANCH: ${{ github.head_ref }}
         run: |
           # Mark as ready if still draft
