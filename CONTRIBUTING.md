@@ -106,6 +106,7 @@ This project follows **git flow**.
 | `main` | — | — | Production. Never push directly. |
 | `develop` | `main` | — | Integration. Never push directly. |
 | `feature/<id>-<desc>` | `develop` | `develop` | New features |
+| `fix/<id>-<desc>` | `develop` | `develop` | Bug fixes |
 | `improve/<desc>` | `develop` | `develop` | AI audit improvements |
 | `hotfix/<id>-<desc>` | `main` | `main` + `develop` | Urgent production fixes |
 | `release/<version>` | `develop` | `main` + `develop` | Release preparation |
@@ -116,7 +117,7 @@ This project follows **git flow**.
 <constraints>
 - all PRs must target `develop`, except `hotfix/*` and `release/*` which target `main`
 - branch from `develop` for all new work; branch from `main` only for hotfixes
-- squash merge for `feature/*`, `improve/*`, `chore/*`
+- rebase merge for `feature/*`, `fix/*`, `improve/*`, `chore/*` (linear history)
 - merge commit for `release/*` and `hotfix/*` (preserves release boundary in history)
 - never push directly to `main` or `develop`
 - branch name must include issue ID when one exists: `feature/<id>-<description>`
