@@ -1,6 +1,7 @@
 ---
 name: evaluation
 description: Build evaluation pipelines for AI outputs — create datasets, write evaluators, and measure quality systematically.
+requires: [observability]
 ---
 
 ## Sequence

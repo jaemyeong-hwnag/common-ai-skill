@@ -2,8 +2,30 @@
 
 ## [1.1.9] - 2026-03-28
 
+### Added
+- `close-issues-on-merge.yml`: auto-close linked issues when PR is merged (parses branch name and PR body)
+- `pyproject.toml` + `common_ai_skill/install.py`: pip distribution support (`pip install common-ai-skill`)
+- Context signals section in README for structured skill auto-selection
+- Chore/docs issue template
+- `requires:` dependency metadata in skill frontmatter (agent-orchestration, coverage, evaluation, finalize, hexagonal-development, rag-development)
+
+### Removed
+- `skill-propose`, `skill-install`, `skill-update` skills — reverted (no implementation backing them)
+- `enhancement` and `bug` labels (duplicates of `feature` and `fix`)
+- Redundant `noop` push trigger from `reusable-skill-check.yml`
+
 ### Fixed
-- `release-merge.yml`: remove `enforce_admins` disable/re-enable API calls — `GITHUB_TOKEN` cannot delete admin branch protection; develop branch protection updated to remove PR requirement, allowing `github-actions[bot]` to push back-merge directly
+- `ai-pr-review.yml`: remove `gh pr review --request-changes` — `GITHUB_TOKEN` cannot review its own PR
+- `ai-pr-review.yml`: improve abstraction check prompt to distinguish domain concepts from tech-specific terms
+- `ai-pr-review.yml`: write review issues to file instead of `GITHUB_OUTPUT` to prevent multiline format errors
+- `release-merge.yml`: remove `enforce_admins` disable/re-enable API calls — `GITHUB_TOKEN` cannot delete admin branch protection
+- PR template: remove redundant Type section, clarify testing instructions
+- `pyproject.toml` version synced with `package.json` (1.1.4 → 1.1.9)
+- Branch protection: `develop` and `main` require status checks (strict mode), auto-merge enabled
+
+### Changed
+- Branch protection: `develop` strict=true, required checks: "Validate branch name", "AI code review"
+- Branch protection: `main` strict=true, enforce_admins=true, required checks: "Validate branch name", "AI code review"
 
 ## [1.1.8] - 2026-03-28
 

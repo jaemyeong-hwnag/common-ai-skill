@@ -43,7 +43,7 @@ change.type=ai-feature
 
 change.type=explicit
   → /version /security-audit /principle-audit /ai-token-optimize
-    /coverage /test-runner /finalize /skill-propose /skill-install /skill-update
+    /coverage /test-runner /finalize
 ```
 
 ## Composition

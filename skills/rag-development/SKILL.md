@@ -1,6 +1,7 @@
 ---
 name: rag-development
 description: Implement Retrieval-Augmented Generation pipelines — ingestion, chunking, embedding, retrieval, and generation.
+requires: [framework-selection]
 ---
 
 ## Sequence
