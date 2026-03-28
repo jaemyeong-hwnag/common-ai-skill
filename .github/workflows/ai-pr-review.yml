@@ -264,9 +264,6 @@ jobs:
                   "{\"approved\": true/false, \"summary\": \"one sentence\", \"issues\": [\"...\"]}\n\n"
                   "Approve when: code quality acceptable, no security issues, changes coherent.\n"
                   "Reject when: security vulnerabilities, broken logic, new features without tests.\n"
-                  "IMPORTANT: SKILL.md files are abstract interface definitions (not code) — "
-                  "they intentionally have no tests. Always approve SKILL.md-only changes "
-                  "if the content is coherent and free of security issues.\n"
                   "All output must be in English."
                 )
               },
