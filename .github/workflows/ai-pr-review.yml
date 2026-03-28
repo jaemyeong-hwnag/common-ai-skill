@@ -213,11 +213,16 @@ jobs:
 
           if [ "$PASSED" != "true" ]; then
             # Formally request changes — blocks merge
+            {
+              echo "**Core principle violated:** ${SUMMARY}"
+              echo ""
+              echo "Skills must be technology-agnostic interfaces that define WHAT, not HOW."
+              echo "See the Abstraction Check comment for specific violations."
+              echo "Fix all HARD violations before this PR can be merged."
+            } > /tmp/review_body.md
             gh pr review "${{ github.event.pull_request.number }}" \
               --request-changes \
-              --body "**Core principle violated:** ${SUMMARY}
-
-Skills must be technology-agnostic interfaces that define WHAT, not HOW. See the Abstraction Check comment for specific violations. Fix all HARD violations before this PR can be merged."
+              --body-file /tmp/review_body.md
             exit 1
           fi
 
