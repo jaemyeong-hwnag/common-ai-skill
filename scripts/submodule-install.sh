@@ -12,7 +12,8 @@ MARKER_END="<!-- common-ai-skill:end -->"
 SKILLS="delivery-workflow test-runner coverage finalize hexagonal-development \
 interface-first-development docs-sync security-audit version ai-token-optimize \
 principle-audit framework-selection rag-development observability evaluation \
-human-in-the-loop agent-orchestration"
+human-in-the-loop agent-orchestration \
+skill-propose skill-install skill-update"
 
 # Add submodule if not already present
 if [ ! -f ".gitmodules" ] || ! grep -q "$SUBMODULE_PATH" ".gitmodules" 2>/dev/null; then
