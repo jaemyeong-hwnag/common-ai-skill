@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.7] - 2026-03-28
+
+### Fixed
+- `release-merge.yml`: duplicate `env:` key in `publish-github-release` step caused YAML parse error, preventing `pull_request` events from triggering the workflow — use `export VERSION` in shell instead
+
 ## [1.1.5] - 2026-03-28
 
 ### Added
