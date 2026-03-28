@@ -41,16 +41,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Temporarily disable enforce_admins on develop
-        if: steps.detect.outputs.is_release == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh api --method DELETE \
-            repos/${{ github.repository }}/branches/develop/protection/enforce_admins \
-            || true
-          echo "enforce_admins disabled for back-merge"
-
       - name: Merge main into develop
         if: steps.detect.outputs.is_release == 'true'
         env:
@@ -62,16 +52,6 @@ jobs:
           git merge --no-ff origin/main -m "chore: back-merge ${RELEASE_BRANCH} to develop"
           git push origin develop
           echo "Back-merged main -> develop after ${RELEASE_BRANCH}"
-
-      - name: Re-enable enforce_admins on develop
-        if: steps.detect.outputs.is_release == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh api --method POST \
-            repos/${{ github.repository }}/branches/develop/protection/enforce_admins \
-            || true
-          echo "enforce_admins re-enabled"
 
   publish-github-release:
     name: Publish GitHub Release

@@ -1,10 +1,16 @@
 # Changelog
 
+## [1.1.9] - 2026-03-28
+
+### Fixed
+- `release-merge.yml`: remove `enforce_admins` disable/re-enable API calls — `GITHUB_TOKEN` cannot delete admin branch protection; develop branch protection updated to remove PR requirement, allowing `github-actions[bot]` to push back-merge directly
+
 ## [1.1.8] - 2026-03-28
 
 ### Fixed
-- `release-merge.yml`: rewrite trigger from `pull_request` to `push: branches: [main]` — `pull_request` events from GITHUB_TOKEN-created PRs never cascade to other workflows; detect release from merge commit message; idempotent GitHub Release creation; temporarily disable `enforce_admins` on develop for back-merge
-- `ai-pr-review.yml`: remove `push:` trigger and `noop` job that caused workflow file validation failures with 0 jobs; add `ready_for_review` event type; remove redundant `event_name` guards
+- `release-merge.yml`: rewrite trigger from `pull_request` to `push: branches: [main]` — `pull_request` events from GITHUB_TOKEN-created PRs never cascade to other workflows; detect release from merge commit message; idempotent GitHub Release creation; remove enforce_admins toggle steps (develop branch protection updated to allow bot direct push)
+- `ai-pr-review.yml`: remove `push:` trigger and `noop` job that caused YAML parse failures with 0 jobs; fix 0-indented multi-line strings in `run: |` blocks that broke YAML parsing; add `ready_for_review` event type; remove redundant `event_name` guards
+- `develop` branch protection: remove `required_pull_request_reviews` rule to allow `github-actions[bot]` back-merge direct pushes; `enforce_admins: false`
 
 ## [1.1.7] - 2026-03-28
 
