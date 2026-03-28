@@ -225,7 +225,7 @@ jobs:
             } > /tmp/review_body.md
             gh pr review "${{ github.event.pull_request.number }}" \
               --request-changes \
-              --body-file /tmp/review_body.md
+              --body-file /tmp/review_body.md || true
             exit 1
           fi
 
