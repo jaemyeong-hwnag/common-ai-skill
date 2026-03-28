@@ -172,11 +172,14 @@ jobs:
           with open(os.environ["GITHUB_OUTPUT"], "a") as f:
               f.write(f"passed={passed}\n")
               f.write(f"summary={summary}\n")
-              v_text = "\n".join(
-                  f"- [{v.get('rule','hard').upper()}] `{v['file']}`: {v['reason']} (`{v.get('line','')}`)"
-                  for v in violations
-              ) if violations else "None"
-              f.write(f"violations={v_text}\n")
+
+          # Write violations to file to avoid shell backtick injection
+          v_text = "\n".join(
+              f"- [{v.get('rule','hard').upper()}] `{v['file']}`: {v['reason']} (`{v.get('line','')}`)"
+              for v in violations
+          ) if violations else "None"
+          with open("/tmp/violations.txt", "w") as f:
+              f.write(v_text)
 
           print(f"passed={passed}, violations={len(violations)}")
           EOF
@@ -188,7 +191,6 @@ jobs:
         run: |
           PASSED="${{ steps.abstraction.outputs.passed }}"
           SUMMARY="${{ steps.abstraction.outputs.summary }}"
-          VIOLATIONS="${{ steps.abstraction.outputs.violations }}"
 
           if [ "$PASSED" = "true" ]; then
             ICON="✅"; STATUS="Passed"
@@ -203,7 +205,7 @@ jobs:
             echo "**Summary:** $SUMMARY"
             echo ""
             echo "**Violations:**"
-            echo "$VIOLATIONS"
+            cat /tmp/violations.txt
             echo ""
             echo "---"
             echo "*HARD: no tool/lang specifics · What-not-How · single responsibility*"
