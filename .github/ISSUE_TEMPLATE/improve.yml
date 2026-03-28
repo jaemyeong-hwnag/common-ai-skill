@@ -1,0 +1,43 @@
+name: AI Audit Improvement
+description: Skill abstraction, format, or completeness improvement
+labels: ["improve"]
+body:
+  - type: textarea
+    id: target
+    attributes:
+      label: Target Skill(s)
+      description: Which skill(s) or sections need improvement?
+    validations:
+      required: true
+
+  - type: textarea
+    id: criterion
+    attributes:
+      label: Criterion Violated
+      description: |
+        Which audit criterion fails? Choose from:
+        - No technology dependency
+        - Abstract goal, not prescription
+        - AI-implementable
+        - Cross-model format
+        - Token efficient
+        - Information placement
+        - Research-aligned
+    validations:
+      required: true
+
+  - type: textarea
+    id: research
+    attributes:
+      label: Research Basis
+      description: Citation or evidence supporting the improvement (required for structural/language changes)
+    validations:
+      required: false
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Change
+      description: What should be changed and how?
+    validations:
+      required: true
