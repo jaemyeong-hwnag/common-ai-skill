@@ -1,4 +1,4 @@
-# common-ai-skill
+# ai-skill-interface
 
 ## Directive
 <instruction>
@@ -11,13 +11,13 @@ One skill works for any project, any language, any AI — because you are the ad
 
 ```bash
 # npm — installs skills to ~/.claude/skills/
-npx common-ai-skill
+npx ai-skill-interface
 
 # pip — installs skills to ~/.claude/skills/
-pip install common-ai-skill && common-ai-skill
+pip install ai-skill-interface && ai-skill-interface
 
 # git submodule — wires skills into your project's CLAUDE.md
-curl -sL https://raw.githubusercontent.com/jaemyeong-hwnag/common-ai-skill/main/scripts/submodule-install.sh | sh
+curl -sL https://raw.githubusercontent.com/jaemyeong-hwnag/ai-skill-interface/main/scripts/submodule-install.sh | sh
 ```
 
 ## How Skills Are Loaded
