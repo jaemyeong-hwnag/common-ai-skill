@@ -31,21 +31,23 @@ jobs:
             exit 0
           fi
 
-          gh pr comment "${{ github.event.pull_request.number }}" --body \
-            "## Branch Name Violation ❌
-
-Branch \`${BRANCH}\` does not include a GitHub issue ID.
-
-**Required format:** \`<type>/<issue-id>-<description>\`
-| Type | Target | Example |
-|------|--------|---------|
-| \`feature\` | develop | \`feature/27-add-new-skill\` |
-| \`fix\` | develop | \`fix/31-broken-installer\` |
-| \`hotfix\` | main | \`hotfix/33-npm-publish-fail\` |
-| \`improve\` | develop | \`improve/29-token-efficiency\` |
-| \`chore\` | develop | \`chore/30-update-ci\` |
-
-Rename the branch and re-open the PR."
+          {
+            echo "## Branch Name Violation"
+            echo ""
+            echo "Branch \`${BRANCH}\` does not include a GitHub issue ID."
+            echo ""
+            echo "**Required format:** \`<type>/<issue-id>-<description>\`"
+            echo "| Type | Target | Example |"
+            echo "|------|--------|---------|"
+            echo "| \`feature\` | develop | \`feature/27-add-new-skill\` |"
+            echo "| \`fix\` | develop | \`fix/31-broken-installer\` |"
+            echo "| \`hotfix\` | main | \`hotfix/33-npm-publish-fail\` |"
+            echo "| \`improve\` | develop | \`improve/29-token-efficiency\` |"
+            echo "| \`chore\` | develop | \`chore/30-update-ci\` |"
+            echo ""
+            echo "Rename the branch and re-open the PR."
+          } > /tmp/branch_violation.md
+          gh pr comment "${{ github.event.pull_request.number }}" --body-file /tmp/branch_violation.md
 
           gh pr review "${{ github.event.pull_request.number }}" \
             --request-changes \
