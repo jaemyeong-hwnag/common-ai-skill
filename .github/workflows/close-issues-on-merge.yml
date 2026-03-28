@@ -1,0 +1,57 @@
+name: Close linked issues on PR merge
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  issues: write
+  pull-requests: read
+
+jobs:
+  close-issues:
+    name: Close issues referenced in merged PR
+    if: ${{ github.event.pull_request.merged == true }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Parse PR body and close linked issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+        run: |
+          # Extract issue numbers from closing keywords
+          # Supports: closes/close/closed/fixes/fix/fixed/resolves/resolve/resolved
+          ISSUES=$(echo "$PR_BODY" \
+            | grep -ioE '(closes?|fixe?s?d?|resolves?d?)\s+#[0-9]+' \
+            | grep -oE '#[0-9]+' \
+            | tr -d '#' \
+            | sort -u)
+
+          if [ -z "$ISSUES" ]; then
+            echo "No linked issues found in PR #${PR_NUMBER}"
+            exit 0
+          fi
+
+          echo "Found linked issues: $ISSUES"
+
+          for ISSUE in $ISSUES; do
+            echo "Closing issue #${ISSUE}..."
+
+            # Post comment on issue before closing
+            gh issue comment "$ISSUE" \
+              --repo "${{ github.repository }}" \
+              --body "Closed by PR #${PR_NUMBER}: **${PR_TITLE}** merged into \`${BASE_BRANCH}\`.
+
+${PR_URL}"
+
+            # Close the issue
+            gh issue close "$ISSUE" \
+              --repo "${{ github.repository }}" \
+              --reason "completed"
+
+            echo "Issue #${ISSUE} closed."
+          done
