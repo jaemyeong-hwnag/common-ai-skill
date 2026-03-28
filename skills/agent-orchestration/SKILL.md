@@ -1,6 +1,7 @@
 ---
 name: agent-orchestration
 description: Coordinate multiple agents — routing, delegation, parallelism, state sharing, and result aggregation.
+requires: [framework-selection]
 ---
 
 ## Sequence

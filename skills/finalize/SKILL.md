@@ -1,6 +1,7 @@
 ---
 name: finalize
 description: Post-implementation pipeline — run tests, enforce 80% coverage, sync docs, then commit atomically. Run after every feature or fix.
+requires: [test-runner, coverage, docs-sync, delivery-workflow]
 ---
 
 ## Sequence

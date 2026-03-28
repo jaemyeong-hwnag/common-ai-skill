@@ -1,6 +1,7 @@
 ---
 name: hexagonal-development
 description: Detect and enforce layered architecture boundaries. Use when the project separates concerns into layers and changes touch layer boundaries.
+requires: [interface-first-development]
 ---
 
 ## Sequence

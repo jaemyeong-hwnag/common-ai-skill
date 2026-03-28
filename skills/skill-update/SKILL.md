@@ -1,6 +1,7 @@
 ---
 name: skill-update
 description: Detect the currently installed version of common-ai-skill, check for a newer release, and update all installed skills to the latest version.
+requires: [skill-install]
 ---
 
 <constraints>
