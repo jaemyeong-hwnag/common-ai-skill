@@ -1,31 +1,39 @@
 # Changelog
 
-## [1.1.9] - 2026-03-28
+## [1.2.0] - 2026-03-28
 
 ### Added
-- `close-issues-on-merge.yml`: auto-close linked issues when PR is merged (parses branch name and PR body)
 - `pyproject.toml` + `common_ai_skill/install.py`: pip distribution support (`pip install common-ai-skill`)
 - Context signals section in README for structured skill auto-selection
-- Chore/docs issue template
 - `requires:` dependency metadata in skill frontmatter (agent-orchestration, coverage, evaluation, finalize, hexagonal-development, rag-development)
+- `close-issues-on-merge.yml`: auto-close linked issues on PR merge (dual trigger: `pull_request:closed` + `workflow_run`)
+- `auto-pr.yml`: auto-inject `Closes #<id>` from branch name into PR body
+- Chore/docs issue template, `fix/*` branch type in CONTRIBUTING.md
 
 ### Removed
-- `skill-propose`, `skill-install`, `skill-update` skills — reverted (no implementation backing them)
+- `skill-propose`, `skill-install`, `skill-update` skills (no implementation backing them)
 - `enhancement` and `bug` labels (duplicates of `feature` and `fix`)
 - Redundant `noop` push trigger from `reusable-skill-check.yml`
 
 ### Fixed
+- Abstraction check: validate diff only (not full file) to prevent false positives on unchanged content
+- AI code review: exempt workflow/config/docs files from test requirement
 - `ai-pr-review.yml`: remove `gh pr review --request-changes` — `GITHUB_TOKEN` cannot review its own PR
-- `ai-pr-review.yml`: improve abstraction check prompt to distinguish domain concepts from tech-specific terms
-- `ai-pr-review.yml`: write review issues to file instead of `GITHUB_OUTPUT` to prevent multiline format errors
-- `release-merge.yml`: remove `enforce_admins` disable/re-enable API calls — `GITHUB_TOKEN` cannot delete admin branch protection
+- `ai-pr-review.yml`: write review issues to file to prevent `GITHUB_OUTPUT` multiline errors
+- `issue-branch.yml`: replace inline `--body` with `--body-file` to fix YAML parse failure
+- `release-merge.yml`: remove `enforce_admins` toggle — `GITHUB_TOKEN` cannot modify admin protection
 - PR template: remove redundant Type section, clarify testing instructions
-- `pyproject.toml` version synced with `package.json` (1.1.4 → 1.1.9)
-- Branch protection: `develop` and `main` require status checks (strict mode), auto-merge enabled
+- CONTRIBUTING.md: correct "squash merge" to "rebase merge", add `fix/*` branch type
+- `pyproject.toml` version synced with `package.json`
 
 ### Changed
-- Branch protection: `develop` strict=true, required checks: "Validate branch name", "AI code review"
-- Branch protection: `main` strict=true, enforce_admins=true, required checks: "Validate branch name", "AI code review"
+- Branch protection: `develop` and `main` require status checks (strict=true): "Validate branch name", "AI code review"
+- Repository: auto-merge enabled, squash merge disabled
+
+## [1.1.9] - 2026-03-28
+
+### Fixed
+- `release-merge.yml`: remove `enforce_admins` disable/re-enable API calls
 
 ## [1.1.8] - 2026-03-28
 

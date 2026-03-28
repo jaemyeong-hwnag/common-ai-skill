@@ -95,13 +95,18 @@ jobs:
           2. Rules describe WHAT must be true — not HOW to achieve it.
           3. Single responsibility — one skill, one concern.
 
-          What is NOT a violation:
+          What is NOT a violation — NEVER flag these:
+          - YAML frontmatter fields ("requires:", "name:", "description:") and their
+            values are skill metadata, NOT technology references. Values like
+            "requires: [test-runner, coverage, framework-selection]" reference OTHER
+            SKILLS in this repository — they are internal cross-references, not
+            external tool/framework names. Always approve frontmatter changes.
           - Domain-level abstract concepts: "agent", "orchestrator", "embedding",
             "retrieval", "coverage target", "adapter", "port", "layer", "commit",
             "correlation ID", numeric thresholds (e.g., "80%").
-          - Frontmatter fields: "requires:", "name:", "description:" are metadata.
-          - Only flag terms naming a concrete product, library, language, CLI command,
-            or file path (e.g., "Jest", "Python", "npm test", "src/index.ts").
+          - Only flag terms naming a concrete external product, library, programming
+            language, CLI command, or file path (e.g., "Jest", "Python", "npm test",
+            "src/index.ts").
 
           STRUCTURAL rules — reject only if a changed line breaks the convention:
           single <constraints> block, single <criteria> block.
