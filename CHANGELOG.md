@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.1.7] - 2026-03-28
+
+### Fixed
+- `release-merge.yml`: duplicate `env:` key in `publish-github-release` step caused YAML parse error, preventing `pull_request` events from triggering the workflow — use `export VERSION` in shell instead
+
+## [1.1.6] - 2026-03-28
+
+### Added
+- `label-pr.yml`: auto-label every PR with type (feature/fix/improve/chore/release/hotfix) and size (size/S/M/L) on open/sync
+- `release-merge.yml`: auto-publish GitHub Release with changelog section after release/* merges to main
+- Labels: `release`, `breaking-change`, `wip`, `size/S`, `size/M`, `size/L`
+
+### Changed
+- `auto-pr.yml`: `release/*` and `hotfix/*` PRs created as ready (not draft)
+- `pull_request_template.md`: added type selector, breaking-change flag, testing checklist
+
+### Fixed
+- `release-merge.yml`: rewrite job-level `if` conditions from multiline `|` blocks to single-line `${{ }}` expressions — resolved workflow file parse error causing all runs to fail with 0 jobs
+- Branch protection: `main` and `develop` direct push blocked, force push disabled
+- Repository: squash merge disabled; only rebase (feature branches) and merge commit (release/hotfix) allowed
+
 ## [1.1.5] - 2026-03-28
 
 ### Added
