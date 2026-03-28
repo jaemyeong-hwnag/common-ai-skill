@@ -21,9 +21,6 @@ SKILLS = [
     "evaluation",
     "human-in-the-loop",
     "agent-orchestration",
-    "skill-propose",
-    "skill-install",
-    "skill-update",
 ]
 
 

@@ -1,7 +1,6 @@
 name: Skill Compliance Check (Reusable)
 
 on:
-  push:
   workflow_call:
     inputs:
       skills:
@@ -21,14 +20,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  noop:
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "ok"
-
   skill-compliance:
-    if: github.event_name == 'workflow_call'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

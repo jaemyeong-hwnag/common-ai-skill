@@ -1,12 +1,3 @@
-## Type
-<!-- Check one that matches your branch prefix -->
-- [ ] `feat` — New feature (`feature/*`)
-- [ ] `fix` — Bug fix (`fix/*`)
-- [ ] `improve` — Skill/format improvement (`improve/*`)
-- [ ] `chore` — Config, tooling, housekeeping (`chore/*`)
-- [ ] `release` — Version release (`release/*`)
-- [ ] `hotfix` — Urgent production fix (`hotfix/*`)
-
 ## Summary
 <!-- One or two sentences: what does this PR do and why? -->
 
@@ -30,8 +21,9 @@
 <!-- Required only for structural or language format changes to SKILL.md files -->
 
 ## Testing
-- [ ] Verified locally
+- [ ] Verified locally (`npm test` passes)
 - [ ] No new untested logic (or tests added)
 
 ## Related Issue
+<!-- Branch name auto-links the issue. Add closing keyword to auto-close on merge. -->
 Closes #
