@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0] - 2026-03-29
+
+### Changed
+- Package renamed: `common-ai-skill` → `ai-skill-interface` (npm + PyPI)
+- Python package: `common_ai_skill` → `ai_skill_interface`
+- First public release to npm and PyPI registries
+
 ## [1.3.0] - 2026-03-29
 
 ### Added
