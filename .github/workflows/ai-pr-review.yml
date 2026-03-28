@@ -336,6 +336,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: ${{ github.head_ref }}
         run: |
+          # Mark as ready if still draft
+          gh pr ready "${{ github.event.pull_request.number }}" 2>/dev/null || true
+
           # release/* and hotfix/* → merge commit (preserves release boundary in history)
           # all other branches   → rebase  (linear graph, no merge bubbles)
           if echo "$BRANCH" | grep -qE '^(release|hotfix)/'; then
