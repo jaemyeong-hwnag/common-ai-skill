@@ -1,6 +1,6 @@
 ---
 name: skill-propose
-description: Analyze the current project to identify missing skills and submit a pull request proposing the new skill to the common-ai-skill repository.
+description: Analyze the current project to identify missing skills and propose a new skill to the skill library.
 ---
 
 <constraints>
@@ -9,7 +9,7 @@ description: Analyze the current project to identify missing skills and submit a
 - the proposed skill must contain no technology-specific references
 - the proposed skill must have a single responsibility — one concern only
 - the proposed skill must not overlap with any existing skill
-- submit the proposal targeting the skill repository's contribution branch
+- submit the proposal to the skill library
 </constraints>
 
 <criteria>
