@@ -50,10 +50,8 @@ jobs:
           } > /tmp/branch_violation.md
           gh pr comment "${{ github.event.pull_request.number }}" --body-file /tmp/branch_violation.md
 
-          gh pr review "${{ github.event.pull_request.number }}" \
-            --request-changes \
-            --body "Branch \`${BRANCH}\` must include a GitHub issue ID: \`<type>/<issue-id>-<description>\`"
-
+          # Status check failure blocks merge — no need for gh pr review --request-changes
+          # (GITHUB_TOKEN cannot request changes on a PR it created via auto-pr.yml)
           exit 1
 
   # ── Job 2: Skill abstraction check — core project principle ─────────────
@@ -96,6 +94,19 @@ jobs:
           1. No specific language, library, framework, tool, command, or file path.
           2. Rules describe WHAT must be true — not HOW to achieve it.
           3. Single responsibility — one skill, one concern.
+
+          IMPORTANT — what is NOT a HARD violation:
+          - Domain-level abstract concepts are allowed even if they sound technical.
+            Examples that are ACCEPTABLE: "agent", "sub-agent", "orchestrator",
+            "message", "embedding", "retrieval", "coverage target", "evaluator",
+            "adapter", "port", "layer", "inbound", "outbound", "correlation ID".
+          - These are architectural or domain vocabulary, NOT references to a
+            specific language, library, framework, tool, or command.
+          - Numeric thresholds (e.g., "80%") are acceptable when they define a
+            measurable goal, not a technology-specific constant.
+          - Only flag a term as HARD violation if it names a concrete product,
+            library, language, CLI command, or file path (e.g., "Jest", "Python",
+            "npm test", "src/index.ts").
 
           STRUCTURAL rules — evaluated against AI prompt engineering research:
           Current convention: single <constraints> block, single <criteria> block,
@@ -215,17 +226,8 @@ jobs:
           gh pr comment "${{ github.event.pull_request.number }}" --body-file /tmp/comment.md
 
           if [ "$PASSED" != "true" ]; then
-            # Formally request changes — blocks merge
-            {
-              echo "**Core principle violated:** ${SUMMARY}"
-              echo ""
-              echo "Skills must be technology-agnostic interfaces that define WHAT, not HOW."
-              echo "See the Abstraction Check comment for specific violations."
-              echo "Fix all HARD violations before this PR can be merged."
-            } > /tmp/review_body.md
-            gh pr review "${{ github.event.pull_request.number }}" \
-              --request-changes \
-              --body-file /tmp/review_body.md || true
+            # Status check failure blocks merge — no need for gh pr review --request-changes
+            # (GITHUB_TOKEN cannot request changes on a PR it created via auto-pr.yml)
             exit 1
           fi
 
@@ -307,6 +309,8 @@ jobs:
       - name: Post review comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH_CHECK: ${{ needs.branch-name-check.result }}
+          ABSTRACTION_CHECK: ${{ needs.skill-abstraction-check.result }}
         run: |
           APPROVED="${{ steps.review.outputs.approved }}"
           SUMMARY="${{ steps.review.outputs.summary }}"
@@ -326,6 +330,15 @@ jobs:
             echo ""
             echo "**Issues:**"
             echo "$ISSUES"
+
+            # Warn if upstream checks failed — auto-merge will be blocked
+            if [ "$BRANCH_CHECK" = "failure" ] || [ "$ABSTRACTION_CHECK" = "failure" ]; then
+              echo ""
+              echo "> **⚠️ Auto-merge blocked** — upstream check(s) failed:"
+              [ "$BRANCH_CHECK" = "failure" ]      && echo "> - Branch name validation"
+              [ "$ABSTRACTION_CHECK" = "failure" ]  && echo "> - Skill abstraction check"
+            fi
+
             echo ""
             echo "---"
             echo "*Analyzed by [GitHub Models](https://github.com/marketplace/models) (gpt-4o-mini)*"
