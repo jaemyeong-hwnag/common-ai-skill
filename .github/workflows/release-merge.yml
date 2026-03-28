@@ -11,12 +11,9 @@ permissions:
   pull-requests: write
 
 jobs:
-  # ── Job 1: Enable auto-merge when release PR is opened/updated ──────────
   enable-auto-merge:
     name: Enable auto-merge (merge commit)
-    if: |
-      github.event.action != 'closed' &&
-      startsWith(github.head_ref, 'release/')
+    if: ${{ github.event.action != 'closed' && startsWith(github.head_ref, 'release/') }}
     runs-on: ubuntu-latest
     steps:
       - name: Enable auto-merge with merge commit strategy
@@ -26,15 +23,11 @@ jobs:
           gh pr merge "${{ github.event.pull_request.number }}" \
             --auto \
             --merge
-          echo "Auto-merge (merge commit) enabled for PR #${{ github.event.pull_request.number }} (${{ github.head_ref }} → main)"
+          echo "Auto-merge enabled for PR #${{ github.event.pull_request.number }} (${{ github.head_ref }} -> main)"
 
-  # ── Job 2: Back-merge main → develop after release is merged ────────────
   back-merge-to-develop:
-    name: Back-merge main → develop
-    if: |
-      github.event.action == 'closed' &&
-      github.event.pull_request.merged == true &&
-      startsWith(github.head_ref, 'release/')
+    name: Back-merge main to develop
+    if: ${{ github.event.action == 'closed' && github.event.pull_request.merged == true && startsWith(github.head_ref, 'release/') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -52,15 +45,11 @@ jobs:
           RELEASE_BRANCH: ${{ github.head_ref }}
         run: |
           git fetch origin
-
           git checkout develop
           git pull origin develop
-
-          git merge --no-ff origin/main \
-            -m "chore: back-merge ${RELEASE_BRANCH} to develop"
-
+          git merge --no-ff origin/main -m "chore: back-merge ${RELEASE_BRANCH} to develop"
           git push origin develop
-          echo "Back-merged main → develop after ${RELEASE_BRANCH} was released"
+          echo "Back-merged main -> develop after ${RELEASE_BRANCH}"
 
       - name: Comment on merged PR
         env:
@@ -68,5 +57,5 @@ jobs:
         run: |
           gh pr comment "${{ github.event.pull_request.number }}" --body \
             "**Release complete.**
-- Merged into \`main\` ✅
-- Back-merged into \`develop\` ✅"
+- Merged into \`main\`
+- Back-merged into \`develop\`"
