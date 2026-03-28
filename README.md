@@ -7,6 +7,19 @@ You are the implementation: read the skill → inspect this project → fulfill 
 One skill works for any project, any language, any AI — because you are the adapter.
 </instruction>
 
+## Installation
+
+```bash
+# npm — installs skills to ~/.claude/skills/
+npx common-ai-skill
+
+# pip — installs skills to ~/.claude/skills/
+pip install common-ai-skill && common-ai-skill
+
+# git submodule — wires skills into your project's CLAUDE.md
+curl -sL https://raw.githubusercontent.com/jaemyeong-hwnag/common-ai-skill/main/scripts/submodule-install.sh | sh
+```
+
 ## How Skills Are Loaded
 
 Each skill lives in `skills/<name>/SKILL.md`. When an AI reads this repository, it loads the relevant skill files directly. The README serves as the index and auto-selection guide; each skill's full definition is below and in its own file.
