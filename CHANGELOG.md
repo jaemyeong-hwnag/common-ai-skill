@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.9] - 2026-03-28
+
+### Fixed
+- `release-merge.yml`: remove `enforce_admins` disable/re-enable API calls — `GITHUB_TOKEN` cannot delete admin branch protection; develop branch protection updated to remove PR requirement, allowing `github-actions[bot]` to push back-merge directly
+
 ## [1.1.8] - 2026-03-28
 
 ### Fixed
