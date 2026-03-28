@@ -1,0 +1,101 @@
+name: Close linked issues on PR merge
+
+on:
+  pull_request:
+    types: [closed]
+  workflow_run:
+    workflows: ["AI PR Review & Auto-merge"]
+    types: [completed]
+
+permissions:
+  issues: write
+  pull-requests: read
+
+jobs:
+  # Job 1: Direct trigger when PR is closed by a human (non-GITHUB_TOKEN)
+  close-on-pr-event:
+    name: Close issues (PR event)
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close linked issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          # Extract issue IDs from branch name and PR body
+          BRANCH_ISSUE=$(echo "$BRANCH" | grep -oE '/[0-9]+' | head -1 | tr -d '/')
+          BODY_ISSUES=$(echo "$PR_BODY" \
+            | grep -ioE '(closes?|fixe?s?d?|resolves?d?)\s+#[0-9]+' \
+            | grep -oE '#[0-9]+' | tr -d '#' | sort -u)
+          ALL_ISSUES=$(printf '%s\n%s' "$BRANCH_ISSUE" "$BODY_ISSUES" \
+            | grep -v '^$' | sort -u)
+
+          if [ -z "$ALL_ISSUES" ]; then
+            echo "No linked issues found in PR #${PR_NUMBER}"
+            exit 0
+          fi
+
+          for ISSUE in $ALL_ISSUES; do
+            echo "Closing issue #${ISSUE}..."
+            gh issue close "$ISSUE" --repo "${{ github.repository }}" \
+              --reason "completed" \
+              --comment "Closed by PR #${PR_NUMBER}: **${PR_TITLE}** merged into \`${BASE_BRANCH}\`." || true
+          done
+
+  # Job 2: Trigger after AI review workflow completes (catches GITHUB_TOKEN auto-merges)
+  close-on-workflow-run:
+    name: Close issues (workflow_run)
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Find merged PR and close linked issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          # Find the PR for this branch
+          PR_JSON=$(gh pr list --head "$HEAD_BRANCH" --state merged --json number,title,body,baseRefName --jq '.[0]' \
+            --repo "${{ github.repository }}" 2>/dev/null || echo "")
+
+          if [ -z "$PR_JSON" ] || [ "$PR_JSON" = "null" ]; then
+            echo "No merged PR found for branch $HEAD_BRANCH"
+            exit 0
+          fi
+
+          PR_NUMBER=$(echo "$PR_JSON" | jq -r '.number')
+          PR_TITLE=$(echo "$PR_JSON" | jq -r '.title')
+          PR_BODY=$(echo "$PR_JSON" | jq -r '.body')
+          BASE_BRANCH=$(echo "$PR_JSON" | jq -r '.baseRefName')
+
+          echo "Found merged PR #${PR_NUMBER}: ${PR_TITLE}"
+
+          # Extract issue IDs from branch name and PR body
+          BRANCH_ISSUE=$(echo "$HEAD_BRANCH" | grep -oE '/[0-9]+' | head -1 | tr -d '/')
+          BODY_ISSUES=$(echo "$PR_BODY" \
+            | grep -ioE '(closes?|fixe?s?d?|resolves?d?)\s+#[0-9]+' \
+            | grep -oE '#[0-9]+' | tr -d '#' | sort -u)
+          ALL_ISSUES=$(printf '%s\n%s' "$BRANCH_ISSUE" "$BODY_ISSUES" \
+            | grep -v '^$' | sort -u)
+
+          if [ -z "$ALL_ISSUES" ]; then
+            echo "No linked issues found"
+            exit 0
+          fi
+
+          for ISSUE in $ALL_ISSUES; do
+            # Check if issue is already closed
+            STATE=$(gh issue view "$ISSUE" --repo "${{ github.repository }}" --json state --jq '.state' 2>/dev/null || echo "UNKNOWN")
+            if [ "$STATE" = "CLOSED" ]; then
+              echo "Issue #${ISSUE} already closed — skipping"
+              continue
+            fi
+            echo "Closing issue #${ISSUE}..."
+            gh issue close "$ISSUE" --repo "${{ github.repository }}" \
+              --reason "completed" \
+              --comment "Closed by PR #${PR_NUMBER}: **${PR_TITLE}** merged into \`${BASE_BRANCH}\`." || true
+          done

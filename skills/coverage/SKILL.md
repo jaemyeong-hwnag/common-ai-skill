@@ -1,6 +1,7 @@
 ---
 name: coverage
 description: Analyze test coverage and drive it to 80%+ by writing missing tests. Detects the project's test runner automatically.
+requires: [test-runner]
 ---
 
 ## Sequence

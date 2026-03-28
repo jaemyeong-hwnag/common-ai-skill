@@ -1,9 +1,39 @@
 # Changelog
 
+## [1.2.0] - 2026-03-28
+
+### Added
+- `pyproject.toml` + `common_ai_skill/install.py`: pip distribution support (`pip install common-ai-skill`)
+- Context signals section in README for structured skill auto-selection
+- `requires:` dependency metadata in skill frontmatter (agent-orchestration, coverage, evaluation, finalize, hexagonal-development, rag-development)
+- `close-issues-on-merge.yml`: auto-close linked issues on PR merge (dual trigger: `pull_request:closed` + `workflow_run`)
+- `auto-pr.yml`: auto-inject `Closes #<id>` from branch name into PR body
+- Chore/docs issue template, `fix/*` branch type in CONTRIBUTING.md
+
+### Removed
+- `skill-propose`, `skill-install`, `skill-update` skills (no implementation backing them)
+- `enhancement` and `bug` labels (duplicates of `feature` and `fix`)
+- Redundant `noop` push trigger from `reusable-skill-check.yml`
+
+### Fixed
+- Abstraction check: validate diff only (not full file) to prevent false positives on unchanged content
+- AI code review: exempt workflow/config/docs files from test requirement
+- `ai-pr-review.yml`: remove `gh pr review --request-changes` — `GITHUB_TOKEN` cannot review its own PR
+- `ai-pr-review.yml`: write review issues to file to prevent `GITHUB_OUTPUT` multiline errors
+- `issue-branch.yml`: replace inline `--body` with `--body-file` to fix YAML parse failure
+- `release-merge.yml`: remove `enforce_admins` toggle — `GITHUB_TOKEN` cannot modify admin protection
+- PR template: remove redundant Type section, clarify testing instructions
+- CONTRIBUTING.md: correct "squash merge" to "rebase merge", add `fix/*` branch type
+- `pyproject.toml` version synced with `package.json`
+
+### Changed
+- Branch protection: `develop` and `main` require status checks (strict=true): "Validate branch name", "AI code review"
+- Repository: auto-merge enabled, squash merge disabled
+
 ## [1.1.9] - 2026-03-28
 
 ### Fixed
-- `release-merge.yml`: remove `enforce_admins` disable/re-enable API calls — `GITHUB_TOKEN` cannot delete admin branch protection; develop branch protection updated to remove PR requirement, allowing `github-actions[bot]` to push back-merge directly
+- `release-merge.yml`: remove `enforce_admins` disable/re-enable API calls
 
 ## [1.1.8] - 2026-03-28
 
