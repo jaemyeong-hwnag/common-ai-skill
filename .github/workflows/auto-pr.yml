@@ -45,10 +45,14 @@ jobs:
             | tr '-' ' ')
           TITLE="${TYPE}: ${DESC}"
 
+          # Extract issue ID from branch name (e.g. feature/49-description → 49)
+          ISSUE_ID=$(echo "$BRANCH" | grep -oE '/[0-9]+' | head -1 | tr -d '/')
+          echo "issue_id=$ISSUE_ID" >> $GITHUB_OUTPUT
+
           echo "base=$BASE"   >> $GITHUB_OUTPUT
           echo "title=$TITLE" >> $GITHUB_OUTPUT
           echo "draft=$DRAFT" >> $GITHUB_OUTPUT
-          echo "PR: $TITLE ($BRANCH -> $BASE) draft=$DRAFT"
+          echo "PR: $TITLE ($BRANCH -> $BASE) draft=$DRAFT issue=$ISSUE_ID"
 
       - name: Create PR if none exists
         env:
@@ -73,11 +77,19 @@ jobs:
           DRAFT_FLAG=""
           [ "$DRAFT" = "true" ] && DRAFT_FLAG="--draft"
 
+          # Inject issue ID into PR body template
+          ISSUE_ID="${{ steps.meta.outputs.issue_id }}"
+          if [ -n "$ISSUE_ID" ]; then
+            sed "s|Closes #|Closes #${ISSUE_ID}|" .github/pull_request_template.md > /tmp/pr_body.md
+          else
+            cp .github/pull_request_template.md /tmp/pr_body.md
+          fi
+
           if ! gh pr create \
             --head "$BRANCH" \
             --base "$BASE" \
             --title "$TITLE" \
-            --body-file ".github/pull_request_template.md" \
+            --body-file "/tmp/pr_body.md" \
             $DRAFT_FLAG 2>&1 | tee /tmp/pr_create.log; then
             if grep -q "already exists" /tmp/pr_create.log; then
               echo "PR already exists (race condition) — skipping."
