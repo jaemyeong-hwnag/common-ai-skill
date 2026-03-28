@@ -25,6 +25,7 @@ const SKILLS = [
   "evaluation",
   "human-in-the-loop",
   "agent-orchestration",
+  "harness-engineering",
   "auto-select",
 ];
 
