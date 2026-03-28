@@ -25,7 +25,7 @@ SKILLS = [
 
 
 def skills_src() -> Path:
-    return Path(__file__).parent.parent / "skills"
+    return Path(__file__).parent / "skills"
 
 
 def skills_dest() -> Path:

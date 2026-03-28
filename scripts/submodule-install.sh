@@ -3,7 +3,7 @@
 
 set -e
 
-REPO_URL="https://github.com/hjm/common-ai-skill.git"
+REPO_URL="https://github.com/jaemyeong-hwnag/common-ai-skill.git"
 SUBMODULE_PATH=".skills"
 CLAUDE_MD="CLAUDE.md"
 MARKER_START="<!-- common-ai-skill:start -->"
