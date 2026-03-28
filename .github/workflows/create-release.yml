@@ -1,0 +1,173 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: >
+          Version bump type. "auto" detects from commit prefixes since last tag.
+          feat:→minor, fix:/refactor:/perf:→patch, BREAKING CHANGE→major.
+        required: false
+        type: choice
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+        default: auto
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    name: Detect version and create release branch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: develop
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Detect version bump from commits
+        id: version
+        env:
+          BUMP_INPUT: ${{ inputs.bump }}
+        run: |
+          # Get current version from package.json
+          CURRENT=$(grep '"version"' package.json | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          echo "current=$CURRENT"
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+
+          if [ "$BUMP_INPUT" != "auto" ]; then
+            BUMP="$BUMP_INPUT"
+            echo "Bump type (manual): $BUMP"
+          else
+            # Analyze commits since last tag
+            LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+            if [ -n "$LAST_TAG" ]; then
+              COMMITS=$(git log "${LAST_TAG}..HEAD" --oneline --no-merges)
+            else
+              COMMITS=$(git log --oneline --no-merges)
+            fi
+
+            echo "Commits since $LAST_TAG:"
+            echo "$COMMITS"
+
+            BUMP="none"
+
+            # Check for BREAKING CHANGE
+            if git log "${LAST_TAG}..HEAD" --format="%B" 2>/dev/null | grep -qiE "BREAKING CHANGE"; then
+              BUMP="major"
+            # Check for feat: commits
+            elif echo "$COMMITS" | grep -qE "^[a-f0-9]+ feat[\(:]"; then
+              BUMP="minor"
+            # Check for fix:/refactor:/perf: commits
+            elif echo "$COMMITS" | grep -qE "^[a-f0-9]+ (fix|refactor|perf)[\(:]"; then
+              BUMP="patch"
+            fi
+
+            echo "Bump type (auto-detected): $BUMP"
+          fi
+
+          if [ "$BUMP" = "none" ]; then
+            echo "No version-changing commits found (only test/docs/chore). Skipping release."
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Calculate new version
+          case "$BUMP" in
+            major) NEW_VERSION="$((MAJOR+1)).0.0" ;;
+            minor) NEW_VERSION="${MAJOR}.$((MINOR+1)).0" ;;
+            patch) NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH+1))" ;;
+          esac
+
+          echo "skip=false" >> $GITHUB_OUTPUT
+          echo "bump=$BUMP" >> $GITHUB_OUTPUT
+          echo "current=$CURRENT" >> $GITHUB_OUTPUT
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $CURRENT → $NEW_VERSION ($BUMP)"
+
+      - name: Update version files
+        if: steps.version.outputs.skip != 'true'
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.new_version }}
+          CURRENT: ${{ steps.version.outputs.current }}
+        run: |
+          # Update package.json
+          sed -i "s/\"version\": \"${CURRENT}\"/\"version\": \"${NEW_VERSION}\"/" package.json
+
+          # Update pyproject.toml
+          sed -i "s/version = \"${CURRENT}\"/version = \"${NEW_VERSION}\"/" pyproject.toml
+
+          echo "Updated version files: $CURRENT → $NEW_VERSION"
+
+      - name: Generate CHANGELOG entry
+        if: steps.version.outputs.skip != 'true'
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.new_version }}
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            RANGE="${LAST_TAG}..HEAD"
+          else
+            RANGE="HEAD"
+          fi
+
+          DATE=$(date +%Y-%m-%d)
+
+          # Categorize commits
+          ADDED=$(git log "$RANGE" --oneline --no-merges --grep="^feat" --format="- %s" | sed 's/^- feat[:(]/- /' | sed 's/^- /- /')
+          FIXED=$(git log "$RANGE" --oneline --no-merges --grep="^fix" --format="- %s" | sed 's/^- fix[:(]/- /' | sed 's/^- /- /')
+          CHANGED=$(git log "$RANGE" --oneline --no-merges --grep="^refactor\|^perf" --format="- %s" | sed 's/^- [a-z]*[:(]/- /' | sed 's/^- /- /')
+
+          {
+            echo "## [${NEW_VERSION}] - ${DATE}"
+            echo ""
+            if [ -n "$ADDED" ]; then
+              echo "### Added"
+              echo "$ADDED"
+              echo ""
+            fi
+            if [ -n "$CHANGED" ]; then
+              echo "### Changed"
+              echo "$CHANGED"
+              echo ""
+            fi
+            if [ -n "$FIXED" ]; then
+              echo "### Fixed"
+              echo "$FIXED"
+              echo ""
+            fi
+          } > /tmp/new_changelog.md
+
+          # Prepend to CHANGELOG.md (after first line "# Changelog")
+          head -1 CHANGELOG.md > /tmp/changelog_final.md
+          echo "" >> /tmp/changelog_final.md
+          cat /tmp/new_changelog.md >> /tmp/changelog_final.md
+          tail -n +2 CHANGELOG.md >> /tmp/changelog_final.md
+          mv /tmp/changelog_final.md CHANGELOG.md
+
+          echo "Generated CHANGELOG entry for $NEW_VERSION"
+
+      - name: Create release branch and push
+        if: steps.version.outputs.skip != 'true'
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.new_version }}
+          BUMP: ${{ steps.version.outputs.bump }}
+        run: |
+          BRANCH="release/${NEW_VERSION}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b "$BRANCH"
+          git add package.json pyproject.toml CHANGELOG.md
+          git commit -m "release: ${NEW_VERSION}"
+          git push origin "$BRANCH"
+
+          echo "Created release branch: $BRANCH (${BUMP} bump)"
+          echo "Auto-PR workflow will create a PR targeting main."
