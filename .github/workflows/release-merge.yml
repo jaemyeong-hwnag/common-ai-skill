@@ -58,4 +58,52 @@ jobs:
           gh pr comment "${{ github.event.pull_request.number }}" --body \
             "**Release complete.**
 - Merged into \`main\`
-- Back-merged into \`develop\`"
+- Back-merged into \`develop\`
+- GitHub Release will be published shortly"
+
+  publish-github-release:
+    name: Publish GitHub Release
+    if: ${{ github.event.action == 'closed' && github.event.pull_request.merged == true && startsWith(github.head_ref, 'release/') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Extract version and changelog section
+        id: release
+        env:
+          RELEASE_BRANCH: ${{ github.head_ref }}
+        run: |
+          VERSION=$(echo "$RELEASE_BRANCH" | sed 's|release/||')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+          python3 - <<PYEOF
+          import re, os
+
+          version = os.environ['VERSION']
+          with open('CHANGELOG.md', 'r') as f:
+              content = f.read()
+
+          pattern = rf'## \[{re.escape(version)}\].*?(?=\n## \[|\Z)'
+          match = re.search(pattern, content, re.DOTALL)
+          notes = match.group(0).strip() if match else f'## [{version}]\n\nRelease {version}'
+
+          with open('/tmp/release_notes.md', 'w') as f:
+              f.write(notes)
+          print(f"Extracted notes for v{version} ({len(notes)} chars)")
+          PYEOF
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          gh release create "v${VERSION}" \
+            --title "v${VERSION}" \
+            --notes-file /tmp/release_notes.md \
+            --target main
+          echo "GitHub Release v${VERSION} published"
