@@ -1,0 +1,64 @@
+name: Auto-label PR
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add type label from branch name
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ github.head_ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          case "$BRANCH" in
+            feature/*) LABEL="feature" ;;
+            fix/*)     LABEL="fix" ;;
+            hotfix/*)  LABEL="hotfix" ;;
+            improve/*) LABEL="improve" ;;
+            chore/*)   LABEL="chore" ;;
+            release/*) LABEL="release" ;;
+            *)
+              echo "No type label for branch: $BRANCH"
+              exit 0
+              ;;
+          esac
+
+          gh pr edit "$PR_NUMBER" --add-label "$LABEL" --repo "${{ github.repository }}"
+          echo "Type label added: $LABEL"
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Add size label from diff
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          ADDITIONS=${{ github.event.pull_request.additions }}
+          DELETIONS=${{ github.event.pull_request.deletions }}
+          TOTAL=$((ADDITIONS + DELETIONS))
+
+          if [ "$TOTAL" -lt 50 ]; then
+            SIZE="size/S"
+          elif [ "$TOTAL" -lt 200 ]; then
+            SIZE="size/M"
+          else
+            SIZE="size/L"
+          fi
+
+          # Remove stale size labels
+          for OLD in "size/S" "size/M" "size/L"; do
+            gh pr edit "$PR_NUMBER" --remove-label "$OLD" --repo "${{ github.repository }}" 2>/dev/null || true
+          done
+
+          gh pr edit "$PR_NUMBER" --add-label "$SIZE" --repo "${{ github.repository }}"
+          echo "Size label added: $SIZE (${TOTAL} lines changed)"

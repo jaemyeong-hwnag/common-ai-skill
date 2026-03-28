@@ -20,18 +20,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Resolve base branch and PR title
+      - name: Resolve base branch, title, and draft mode
         id: meta
         env:
           BRANCH: ${{ github.ref_name }}
         run: |
           case "$BRANCH" in
-            feature/*)  BASE="develop"; TYPE="feat" ;;
-            fix/*)      BASE="develop"; TYPE="fix" ;;
-            improve/*)  BASE="develop"; TYPE="improve" ;;
-            chore/*)    BASE="develop"; TYPE="chore" ;;
-            release/*)  BASE="main";    TYPE="release" ;;
-            hotfix/*)   BASE="main";    TYPE="hotfix" ;;
+            feature/*)  BASE="develop"; TYPE="feat";    DRAFT="true" ;;
+            fix/*)      BASE="develop"; TYPE="fix";     DRAFT="true" ;;
+            improve/*)  BASE="develop"; TYPE="improve"; DRAFT="true" ;;
+            chore/*)    BASE="develop"; TYPE="chore";   DRAFT="true" ;;
+            release/*)  BASE="main";    TYPE="release"; DRAFT="false" ;;
+            hotfix/*)   BASE="main";    TYPE="hotfix";  DRAFT="false" ;;
             *)
               echo "No PR rule for branch: $BRANCH"
               exit 0
@@ -39,7 +39,6 @@ jobs:
           esac
 
           # Strip type prefix and leading issue-id from slug for title
-          # feature/27-add-new-skill → "add new skill"
           DESC=$(echo "$BRANCH" \
             | sed "s|^[^/]*/[0-9]*-||" \
             | sed "s|^[^/]*/||" \
@@ -48,14 +47,16 @@ jobs:
 
           echo "base=$BASE"   >> $GITHUB_OUTPUT
           echo "title=$TITLE" >> $GITHUB_OUTPUT
-          echo "PR: $TITLE ($BRANCH -> $BASE)"
+          echo "draft=$DRAFT" >> $GITHUB_OUTPUT
+          echo "PR: $TITLE ($BRANCH -> $BASE) draft=$DRAFT"
 
-      - name: Create draft PR if none exists
+      - name: Create PR if none exists
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: ${{ github.ref_name }}
           BASE: ${{ steps.meta.outputs.base }}
           TITLE: ${{ steps.meta.outputs.title }}
+          DRAFT: ${{ steps.meta.outputs.draft }}
         run: |
           # Idempotent: skip if PR already exists for this branch (any state)
           EXISTING=$(gh pr list \
@@ -68,13 +69,16 @@ jobs:
             exit 0
           fi
 
-          # Create PR; treat "already exists" as success to handle race conditions
+          # release/* and hotfix/* → ready immediately; others → draft
+          DRAFT_FLAG=""
+          [ "$DRAFT" = "true" ] && DRAFT_FLAG="--draft"
+
           if ! gh pr create \
             --head "$BRANCH" \
             --base "$BASE" \
             --title "$TITLE" \
             --body-file ".github/pull_request_template.md" \
-            --draft 2>&1 | tee /tmp/pr_create.log; then
+            $DRAFT_FLAG 2>&1 | tee /tmp/pr_create.log; then
             if grep -q "already exists" /tmp/pr_create.log; then
               echo "PR already exists (race condition) — skipping."
               exit 0
@@ -83,4 +87,4 @@ jobs:
             exit 1
           fi
 
-          echo "Draft PR created: \"$TITLE\" ($BRANCH → $BASE)"
+          echo "PR created: \"$TITLE\" ($BRANCH -> $BASE, draft=$DRAFT)"
