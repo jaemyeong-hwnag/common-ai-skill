@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.3.0] - 2026-03-29
+
+### Added
+- `create-release.yml`: automated semantic version release workflow (auto-detect bump from commit types via `workflow_dispatch`)
+
+### Fixed
+- `pyproject.toml`: fix build-backend (`setuptools.backends.legacy` → `setuptools.build_meta`)
+- `common_ai_skill/install.py`: fix skills path for pip-installed package
+- Repository URL corrected in `package.json`, `submodule-install.sh`, `reusable-skill-check.yml` (`hjm/` → `jaemyeong-hwnag/`)
+- Added Installation section to `README.md` (npm, pip, submodule methods)
+
 ## [1.2.0] - 2026-03-28
 
 ### Added
