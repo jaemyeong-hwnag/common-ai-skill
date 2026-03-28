@@ -238,9 +238,12 @@ jobs:
                   "{\"approved\": true/false, \"summary\": \"one sentence\", \"issues\": [\"...\"]}\n\n"
                   "Approve when: code quality acceptable, no security issues, changes coherent.\n"
                   "Reject when: security vulnerabilities, broken logic, new features without tests.\n"
-                  "IMPORTANT: SKILL.md files are abstract interface definitions (not code) — "
-                  "they intentionally have no tests. Always approve SKILL.md-only changes "
-                  "if the content is coherent and free of security issues.\n"
+                  "IMPORTANT exceptions — always approve these WITHOUT requiring tests:\n"
+                  "- SKILL.md files (abstract interface definitions, not executable code)\n"
+                  "- GitHub Actions workflow files (.github/workflows/*.yml) — CI/CD config, not application code\n"
+                  "- Markdown files (README.md, CHANGELOG.md, CONTRIBUTING.md, templates)\n"
+                  "- Config files (package.json, pyproject.toml, .github/ISSUE_TEMPLATE/*)\n"
+                  "Only require tests for application source code changes (*.js, *.py, *.ts, etc. outside .github/).\n"
                   "All output must be in English."
                 )
               },
