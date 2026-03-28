@@ -11,12 +11,9 @@ permissions:
   pull-requests: write
 
 jobs:
-  # ── Job 1: Enable auto-merge when release PR is opened/updated ──────────
   enable-auto-merge:
     name: Enable auto-merge (merge commit)
-    if: |
-      github.event.action != 'closed' &&
-      startsWith(github.head_ref, 'release/')
+    if: ${{ github.event.action != 'closed' && startsWith(github.head_ref, 'release/') }}
     runs-on: ubuntu-latest
     steps:
       - name: Enable auto-merge with merge commit strategy
@@ -26,15 +23,11 @@ jobs:
           gh pr merge "${{ github.event.pull_request.number }}" \
             --auto \
             --merge
-          echo "Auto-merge (merge commit) enabled for PR #${{ github.event.pull_request.number }} (${{ github.head_ref }} → main)"
+          echo "Auto-merge enabled for PR #${{ github.event.pull_request.number }} (${{ github.head_ref }} -> main)"
 
-  # ── Job 2: Back-merge main → develop after release is merged ────────────
   back-merge-to-develop:
-    name: Back-merge main → develop
-    if: |
-      github.event.action == 'closed' &&
-      github.event.pull_request.merged == true &&
-      startsWith(github.head_ref, 'release/')
+    name: Back-merge main to develop
+    if: ${{ github.event.action == 'closed' && github.event.pull_request.merged == true && startsWith(github.head_ref, 'release/') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -52,15 +45,11 @@ jobs:
           RELEASE_BRANCH: ${{ github.head_ref }}
         run: |
           git fetch origin
-
           git checkout develop
           git pull origin develop
-
-          git merge --no-ff origin/main \
-            -m "chore: back-merge ${RELEASE_BRANCH} to develop"
-
+          git merge --no-ff origin/main -m "chore: back-merge ${RELEASE_BRANCH} to develop"
           git push origin develop
-          echo "Back-merged main → develop after ${RELEASE_BRANCH} was released"
+          echo "Back-merged main -> develop after ${RELEASE_BRANCH}"
 
       - name: Comment on merged PR
         env:
@@ -68,5 +57,53 @@ jobs:
         run: |
           gh pr comment "${{ github.event.pull_request.number }}" --body \
             "**Release complete.**
-- Merged into \`main\` ✅
-- Back-merged into \`develop\` ✅"
+- Merged into \`main\`
+- Back-merged into \`develop\`
+- GitHub Release will be published shortly"
+
+  publish-github-release:
+    name: Publish GitHub Release
+    if: ${{ github.event.action == 'closed' && github.event.pull_request.merged == true && startsWith(github.head_ref, 'release/') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Extract version and changelog section
+        id: release
+        env:
+          RELEASE_BRANCH: ${{ github.head_ref }}
+        run: |
+          VERSION=$(echo "$RELEASE_BRANCH" | sed 's|release/||')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+          python3 - <<PYEOF
+          import re, os
+
+          version = os.environ['VERSION']
+          with open('CHANGELOG.md', 'r') as f:
+              content = f.read()
+
+          pattern = rf'## \[{re.escape(version)}\].*?(?=\n## \[|\Z)'
+          match = re.search(pattern, content, re.DOTALL)
+          notes = match.group(0).strip() if match else f'## [{version}]\n\nRelease {version}'
+
+          with open('/tmp/release_notes.md', 'w') as f:
+              f.write(notes)
+          print(f"Extracted notes for v{version} ({len(notes)} chars)")
+          PYEOF
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          gh release create "v${VERSION}" \
+            --title "v${VERSION}" \
+            --notes-file /tmp/release_notes.md \
+            --target main
+          echo "GitHub Release v${VERSION} published"
