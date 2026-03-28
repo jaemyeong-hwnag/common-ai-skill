@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.8] - 2026-03-28
+
+### Fixed
+- `release-merge.yml`: rewrite trigger from `pull_request` to `push: branches: [main]` — `pull_request` events from GITHUB_TOKEN-created PRs never cascade to other workflows; detect release from merge commit message; idempotent GitHub Release creation; temporarily disable `enforce_admins` on develop for back-merge
+- `ai-pr-review.yml`: remove `push:` trigger and `noop` job that caused workflow file validation failures with 0 jobs; add `ready_for_review` event type; remove redundant `event_name` guards
+
 ## [1.1.7] - 2026-03-28
 
 ### Fixed

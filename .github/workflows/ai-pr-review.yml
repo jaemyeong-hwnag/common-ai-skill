@@ -2,24 +2,16 @@ name: AI PR Review & Auto-merge
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
-  push:
+    types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
-  noop:
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "ok"
-
   # ── Job 1: Branch name must include issue ID ─────────────────────────────
   branch-name-check:
     name: Validate branch name (issue ID required)
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Check branch name contains issue ID
@@ -39,21 +31,23 @@ jobs:
             exit 0
           fi
 
-          gh pr comment "${{ github.event.pull_request.number }}" --body \
-            "## Branch Name Violation ❌
-
-Branch \`${BRANCH}\` does not include a GitHub issue ID.
-
-**Required format:** \`<type>/<issue-id>-<description>\`
-| Type | Target | Example |
-|------|--------|---------|
-| \`feature\` | develop | \`feature/27-add-new-skill\` |
-| \`fix\` | develop | \`fix/31-broken-installer\` |
-| \`hotfix\` | main | \`hotfix/33-npm-publish-fail\` |
-| \`improve\` | develop | \`improve/29-token-efficiency\` |
-| \`chore\` | develop | \`chore/30-update-ci\` |
-
-Rename the branch and re-open the PR."
+          {
+            echo "## Branch Name Violation"
+            echo ""
+            echo "Branch \`${BRANCH}\` does not include a GitHub issue ID."
+            echo ""
+            echo "**Required format:** \`<type>/<issue-id>-<description>\`"
+            echo "| Type | Target | Example |"
+            echo "|------|--------|---------|"
+            echo "| \`feature\` | develop | \`feature/27-add-new-skill\` |"
+            echo "| \`fix\` | develop | \`fix/31-broken-installer\` |"
+            echo "| \`hotfix\` | main | \`hotfix/33-npm-publish-fail\` |"
+            echo "| \`improve\` | develop | \`improve/29-token-efficiency\` |"
+            echo "| \`chore\` | develop | \`chore/30-update-ci\` |"
+            echo ""
+            echo "Rename the branch and re-open the PR."
+          } > /tmp/branch_violation.md
+          gh pr comment "${{ github.event.pull_request.number }}" --body-file /tmp/branch_violation.md
 
           gh pr review "${{ github.event.pull_request.number }}" \
             --request-changes \
@@ -64,7 +58,6 @@ Rename the branch and re-open the PR."
   # ── Job 2: Skill abstraction check — core project principle ─────────────
   skill-abstraction-check:
     name: Skill abstraction & principle check
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -220,18 +213,23 @@ Rename the branch and re-open the PR."
 
           if [ "$PASSED" != "true" ]; then
             # Formally request changes — blocks merge
+            {
+              echo "**Core principle violated:** ${SUMMARY}"
+              echo ""
+              echo "Skills must be technology-agnostic interfaces that define WHAT, not HOW."
+              echo "See the Abstraction Check comment for specific violations."
+              echo "Fix all HARD violations before this PR can be merged."
+            } > /tmp/review_body.md
             gh pr review "${{ github.event.pull_request.number }}" \
               --request-changes \
-              --body "**Core principle violated:** ${SUMMARY}
-
-Skills must be technology-agnostic interfaces that define WHAT, not HOW. See the Abstraction Check comment for specific violations. Fix all HARD violations before this PR can be merged."
+              --body-file /tmp/review_body.md
             exit 1
           fi
 
   # ── Job 3: AI code review + auto-merge ──────────────────────────────────
   ai-review:
     name: AI code review
-    if: always() && github.event_name == 'pull_request'
+    if: always()
     needs: [branch-name-check, skill-abstraction-check]
     runs-on: ubuntu-latest
     steps:
