@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0] - 2026-03-29
+
+### Changed
+- Package renamed: `common-ai-skill` → `ai-skill-interface` (npm + PyPI)
+- Python package: `common_ai_skill` → `ai_skill_interface`
+- First public release to npm and PyPI registries
+
 ## [1.3.0] - 2026-03-29
 
 ### Added
@@ -14,7 +21,7 @@
 ## [1.2.0] - 2026-03-28
 
 ### Added
-- `pyproject.toml` + `common_ai_skill/install.py`: pip distribution support (`pip install common-ai-skill`)
+- `pyproject.toml` + `common_ai_skill/install.py`: pip distribution support (`pip install ai-skill-interface`)
 - Context signals section in README for structured skill auto-selection
 - `requires:` dependency metadata in skill frontmatter (agent-orchestration, coverage, evaluation, finalize, hexagonal-development, rag-development)
 - `close-issues-on-merge.yml`: auto-close linked issues on PR merge (dual trigger: `pull_request:closed` + `workflow_run`)
@@ -111,7 +118,7 @@
 ## [1.1.0] - 2026-03-24
 
 ### Added
-- npm 배포 지원 — `npx common-ai-skill` 실행 시 스킬을 `~/.claude/skills/`에 자동 설치
+- npm 배포 지원 — `npx ai-skill-interface` 실행 시 스킬을 `~/.claude/skills/`에 자동 설치
 - git submodule 배포 지원
 - 재사용 가능한 GitHub Actions 워크플로우 (`reusable-skill-check.yml`) — 다른 팀이 PR에 스킬 준수 체크를 붙일 수 있음
 

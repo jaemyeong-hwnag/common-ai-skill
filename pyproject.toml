@@ -3,13 +3,13 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "common-ai-skill"
-version = "1.3.0"
-description = "Abstract skill library for any AI — delivery, testing, architecture, security, and more"
+name = "ai-skill-interface"
+version = "1.4.0"
+description = "Abstract skill interfaces for AI — delivery, testing, architecture, security, and more. Skills define WHAT; AI decides HOW."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.8"
-keywords = ["ai", "claude", "skills", "llm", "prompt", "engineering"]
+keywords = ["ai", "claude", "skills", "llm", "prompt", "engineering", "interface", "abstract"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -17,11 +17,11 @@ classifiers = [
 ]
 
 [project.scripts]
-common-ai-skill = "common_ai_skill.install:main"
+ai-skill-interface = "ai_skill_interface.install:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["common_ai_skill*"]
+include = ["ai_skill_interface*"]
 
 [tool.setuptools.package-data]
-common_ai_skill = ["skills/**/*.md"]
+ai_skill_interface = ["skills/**/*.md"]

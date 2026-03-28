@@ -21,6 +21,7 @@ SKILLS = [
     "evaluation",
     "human-in-the-loop",
     "agent-orchestration",
+    "auto-select",
 ]
 
 
