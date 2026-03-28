@@ -74,18 +74,16 @@ jobs:
           BRANCH: ${{ steps.branch.outputs.branch }}
           BASE: ${{ steps.branch.outputs.base }}
         run: |
-          {
-            echo "**Branch created:** \`${BRANCH}\` (based on \`${BASE}\`)"
-            echo ""
-            echo "Start working:"
-            echo "\`\`\`bash"
-            echo "git fetch origin"
-            echo "git checkout ${BRANCH}"
-            echo "\`\`\`"
-            echo ""
-            echo "When ready, push to trigger an auto-draft PR:"
-            echo "\`\`\`bash"
-            echo "git push origin ${BRANCH}"
-            echo "\`\`\`"
-          } > /tmp/issue_comment.md
-          gh issue comment "${{ github.event.issue.number }}" --body-file /tmp/issue_comment.md
+          gh issue comment "${{ github.event.issue.number }}" --body \
+            "**Branch created:** \`${BRANCH}\` (based on \`${BASE}\`)
+
+Start working:
+\`\`\`bash
+git fetch origin
+git checkout ${BRANCH}
+\`\`\`
+
+When ready, push to trigger an auto-draft PR:
+\`\`\`bash
+git push origin ${BRANCH}
+\`\`\`"
