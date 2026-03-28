@@ -60,23 +60,29 @@ skill: "run tests before commit"        ← 인터페이스 (불변)
 
 ## 설치
 
-### 방법 1: Claude Code
+### 방법 1: npm (권장)
 
 ```bash
-git clone https://github.com/jaemyeong-hwnag/common-ai-skil.git
-cd common-ai-skil
-cp -r skills/* ~/.claude/skills/
+npx common-ai-skill
 ```
 
-또는 심볼릭 링크로 동기화 유지:
+`~/.claude/skills/`에 17개 스킬이 설치됩니다. 모든 프로젝트에서 공유됩니다.
+
+### 방법 2: pip
 
 ```bash
-for skill in skills/*/; do
-  ln -sf "$(pwd)/$skill" ~/.claude/skills/
-done
+pip install common-ai-skill && common-ai-skill
 ```
 
-### 방법 2: 다른 AI (GPT, Gemini, Llama 등)
+### 방법 3: git submodule (팀 프로젝트, 버전 고정)
+
+```bash
+curl -sL https://raw.githubusercontent.com/jaemyeong-hwnag/common-ai-skill/main/scripts/submodule-install.sh | sh
+```
+
+프로젝트에 `.skills/` 서브모듈 + `CLAUDE.md` 자동 임포트가 추가됩니다.
+
+### 방법 4: 다른 AI (GPT, Gemini, Llama 등)
 
 각 AI의 시스템 프롬프트나 커스텀 인스트럭션에 `skills/<skill-name>/SKILL.md` 내용을 포함하세요. 스킬은 특정 AI에 종속되지 않으므로 어떤 AI에서든 동작합니다.
 
@@ -84,7 +90,40 @@ done
 
 ## 사용법
 
-설치 후 별도 설정 없이 동작합니다. AI가 작업 컨텍스트에 따라 스킬을 자동 선택합니다.
+### 기본: 설치만 하면 자동 동작
+
+설치 후 별도 설정 없이 Claude Code가 작업 컨텍스트에 따라 스킬을 자동 선택·적용합니다.
+
+### 프로젝트별 커스터마이징 (선택)
+
+프로젝트 루트에 `CLAUDE.md`를 만들어 특정 스킬을 명시하거나 프로젝트 규칙을 추가할 수 있습니다:
+
+```markdown
+이 프로젝트에서는 다음 스킬을 항상 적용:
+@~/.claude/skills/delivery-workflow/SKILL.md
+@~/.claude/skills/hexagonal-development/SKILL.md
+
+## 프로젝트 특화 규칙
+- API 응답은 항상 camelCase
+```
+
+### 새 스킬이 필요할 때
+
+프로젝트에서 필요한 스킬이 없으면 Claude Code에게:
+
+```
+"common-ai-skill 레포에 <필요한 스킬> 이슈 발행하고 PR까지 올려줘"
+```
+
+AI가 자동으로: 이슈 생성 → 브랜치 → SKILL.md 작성 → PR → AI 리뷰 → 머지까지 처리합니다.
+
+### 스킬 업데이트
+
+```bash
+npx common-ai-skill   # 또는 pip 재실행
+```
+
+최신 버전의 스킬로 덮어씁니다.
 
 ---
 
@@ -138,9 +177,9 @@ main ←── hotfix/<이슈번호>-<설명>    ← 긴급 수정
 
 | 브랜치 종류 | PR 타겟 | Merge 방식 |
 |-------------|---------|------------|
-| `feature/*`, `improve/*`, `chore/*` | `develop` | Squash merge |
+| `feature/*`, `fix/*`, `improve/*`, `chore/*` | `develop` | Rebase merge |
 | `release/*` | `main` + `develop` | Merge commit |
-| `hotfix/*` | `main` + `develop` | Squash merge |
+| `hotfix/*` | `main` + `develop` | Merge commit |
 
 ### 기여 절차
 
