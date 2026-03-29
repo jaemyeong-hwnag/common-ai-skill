@@ -1,0 +1,125 @@
+name: PR Result Feedback
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: write
+
+jobs:
+  capture-feedback:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Collect PR outcome
+        id: outcome
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          MERGED: ${{ github.event.pull_request.merged }}
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          echo "pr=$PR_NUMBER" >> $GITHUB_OUTPUT
+          echo "merged=$MERGED" >> $GITHUB_OUTPUT
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+
+          # Collect review comments
+          REVIEWS=$(gh pr view "$PR_NUMBER" --json reviews --jq '.reviews[] | "\(.state): \(.body // "no comment")"' 2>/dev/null | head -20)
+          echo "reviews<<EOF" >> $GITHUB_OUTPUT
+          echo "$REVIEWS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          # Collect check results
+          CHECKS=$(gh pr checks "$PR_NUMBER" 2>/dev/null | head -20)
+          echo "checks<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHECKS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Extract linked issue
+        id: issue
+        env:
+          BRANCH: ${{ github.head_ref }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          # Extract issue ID from branch name: <type>/<id>-<desc>
+          ISSUE_FROM_BRANCH=$(echo "$BRANCH" | grep -oE '/[0-9]+' | head -1 | tr -d '/')
+
+          # Extract issue ID from PR body: Closes #<id>, Fixes #<id>, Resolves #<id>
+          ISSUE_FROM_BODY=$(echo "$PR_BODY" | grep -oiE '(closes|fixes|resolves) #[0-9]+' | head -1 | grep -oE '[0-9]+')
+
+          ISSUE_ID="${ISSUE_FROM_BRANCH:-$ISSUE_FROM_BODY}"
+          echo "id=$ISSUE_ID" >> $GITHUB_OUTPUT
+
+      - name: Analyze rejection patterns
+        id: analysis
+        if: github.event.pull_request.merged == false
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          COMMENTS=$(gh pr view "$PR_NUMBER" --json comments --jq '.comments[].body' 2>/dev/null)
+
+          PATTERNS=""
+          if echo "$COMMENTS" | grep -qi "abstraction\|violation\|technology.*specific"; then
+            PATTERNS="${PATTERNS}abstraction-violation "
+          fi
+          if echo "$COMMENTS" | grep -qi "branch.*name\|naming.*convention"; then
+            PATTERNS="${PATTERNS}branch-name-violation "
+          fi
+          if echo "$COMMENTS" | grep -qi "test\|coverage"; then
+            PATTERNS="${PATTERNS}missing-tests "
+          fi
+          if echo "$COMMENTS" | grep -qi "security\|vulnerability"; then
+            PATTERNS="${PATTERNS}security-concern "
+          fi
+
+          echo "patterns=${PATTERNS:-none}" >> $GITHUB_OUTPUT
+
+      - name: Post feedback to linked issue
+        if: steps.issue.outputs.id != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_ID: ${{ steps.issue.outputs.id }}
+          MERGED: ${{ steps.outcome.outputs.merged }}
+          PR_NUMBER: ${{ steps.outcome.outputs.pr }}
+          BRANCH: ${{ steps.outcome.outputs.branch }}
+          REVIEWS: ${{ steps.outcome.outputs.reviews }}
+          CHECKS: ${{ steps.outcome.outputs.checks }}
+          PATTERNS: ${{ steps.analysis.outputs.patterns }}
+        run: |
+          if [ "$MERGED" = "true" ]; then
+            ICON="✅"
+            STATUS="Merged"
+          else
+            ICON="🔄"
+            STATUS="Closed without merge"
+          fi
+
+          {
+            echo "## PR Result Feedback $ICON"
+            echo ""
+            echo "**PR:** #${PR_NUMBER} (\`${BRANCH}\`)"
+            echo "**Status:** ${STATUS}"
+            echo ""
+            echo "### Check Results"
+            echo '```'
+            echo "${CHECKS:-No checks recorded}"
+            echo '```'
+            echo ""
+            echo "### Reviews"
+            echo "${REVIEWS:-No reviews recorded}"
+
+            if [ "$MERGED" != "true" ] && [ "$PATTERNS" != "none" ] && [ -n "$PATTERNS" ]; then
+              echo ""
+              echo "### Detected Rejection Patterns"
+              for p in $PATTERNS; do
+                echo "- \`$p\`"
+              done
+              echo ""
+              echo "> Recurring patterns indicate missing constraints or documentation gaps."
+            fi
+          } > /tmp/feedback.md
+
+          gh issue comment "$ISSUE_ID" --body-file /tmp/feedback.md
