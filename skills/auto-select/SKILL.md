@@ -42,6 +42,7 @@ change.type=ai-feature
   + evaluation              (quality measurement needed)
   + human-in-the-loop       (action.risk=irreversible)
   + agent-orchestration     (ai.complexity=multi-agent)
+  + harness-engineering     (agent runtime environment or execution constraint design)
 
 change.type=explicit
   → the skill the user named directly
