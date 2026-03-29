@@ -53,7 +53,7 @@ change.type=ai-feature
   + evaluation              (quality measurement needed)
   + human-in-the-loop       (action.risk=irreversible)
   + agent-orchestration     (ai.complexity=multi-agent)
-  + harness-engineering     (agent runtime design, guardrails, or sandboxing involved)
+  + harness-engineering     (agent runtime environment or execution constraint design)
 
 change.type=explicit
   → /version /security-audit /principle-audit /ai-token-optimize
@@ -604,6 +604,16 @@ composite       → deterministic first (fast, cheap), semantic second (nuanced)
 generator-evaluator → separate generation from evaluation in adversarial loop
 ```
 
+**Defense in Depth**
+
+```
+independent layers           → each safety mechanism must function if any other fails
+no single point              → at least three independent verification layers active at all times
+mechanical over instructional → enforcement via tooling, not via prompt instructions
+layered redundancy           → permission + sandbox + validation + architectural guard + trace
+assume layer failure         → design each layer as if the others do not exist
+```
+
 **Risk-Based Routing**
 
 ```
@@ -631,6 +641,16 @@ generator-evaluator  → one agent produces, another critiques in adversarial lo
 specialist routing   → classify input, dispatch to domain-specific agent
 ```
 
+**Middleware Architecture**
+
+```
+composable interceptors       → each harness concern as an independent, stackable unit
+filesystem middleware         → scope and filter agent file access per task
+delegation middleware         → manage sub-agent lifecycle and context boundaries
+summarization middleware      → compress context at defined thresholds automatically
+capability routing middleware → match task signals to appropriate skill sets
+```
+
 **Trace-Driven Improvement**
 
 ```
@@ -647,6 +667,9 @@ each harness component encodes an assumption about model limitations
 when models improve → re-test assumptions → strip what is no longer needed
 prefer removing complexity over adding it — simplification beats sophistication
 harness must remain model-agnostic — swappable without structural changes
+improvement through subtraction → measure effectiveness after removing each component
+capability audit               → periodically verify each constraint addresses a real limitation
+minimal toolset                → fewer well-chosen tools outperform large uncurated sets
 ```
 
 **Rules**
@@ -668,6 +691,7 @@ harness must remain model-agnostic — swappable without structural changes
 - prefer single-agent topology — escalate to multi-agent only when single agent is insufficient
 - harness must survive model changes — no coupling to specific model capabilities
 - evaluator must be adversarial — optimistic self-review is insufficient for quality
+- outcomes of automated review and merge processes must feed back as constraints — capture approval patterns, rejection reasons, and merge failures as harness inputs
 </constraints>
 
 **Anti-Patterns**
@@ -682,11 +706,12 @@ optimistic self-eval     → agent evaluating own work without adversarial chall
 model-coupled harness    → harness assumptions hardcoded to specific model behavior
 session amnesia          → no structured handoff between context windows
 complexity accumulation  → adding harness components without re-testing necessity
+outcome-blind pipeline  → automated processes that discard results instead of feeding them back
 ```
 
 **Done**
 <criteria>
-permission boundaries enforced + execution sandboxed with rollback + verification pipeline active (deterministic + semantic + generator-evaluator) + architectural constraints mechanically enforced + feedback loops convert failures to constraints + all agent outputs pass same quality gates as human outputs + audit trail present for all agent actions + session continuity via progress artifacts + doom loop detection active + risk-based routing configured + harness components documented
+permission boundaries enforced + execution sandboxed with rollback + verification pipeline active (deterministic + semantic + generator-evaluator) + architectural constraints mechanically enforced + feedback loops convert failures to constraints + all agent outputs pass same quality gates as human outputs + audit trail present for all agent actions + session continuity via progress artifacts + doom loop detection active + risk-based routing configured + defense-in-depth layers independent + middleware composable + outcome feedback active + harness components documented
 </criteria>
 
 ---
