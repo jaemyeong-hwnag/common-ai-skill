@@ -36,6 +36,43 @@ Every code change MUST follow this exact sequence. No exceptions.
 
 ---
 
+## Permission Boundary
+
+What the agent can and cannot do:
+
+### Allowed Operations
+- git operations (fetch, add, commit, push, checkout, branch, log, diff, status, stash, rebase, merge, cherry-pick)
+- test execution (npm test, node test/)
+- GitHub CLI (gh issue, gh pr)
+- web search and fetch from: github.com, arxiv.org, docs.anthropic.com
+
+### Denied Operations
+<constraints>
+- NEVER run rm -rf on any directory
+- NEVER force push to main or develop (git push --force origin main/develop)
+- NEVER run git reset --hard without explicit user approval
+- NEVER install or remove npm/pip packages without user approval
+- NEVER modify .github/workflows/ without explicit request
+- NEVER access or create files containing secrets, credentials, or API keys
+</constraints>
+
+---
+
+## Execution Sandbox
+
+How to ensure safe, rollback-capable execution:
+
+<constraints>
+- all work happens on feature branches — never on main or develop directly
+- every change must be committed before switching context — uncommitted work is lost state
+- prefer git stash over discarding changes when switching tasks
+- test after every significant change — run npm test before committing
+- if a command might have irreversible side effects, ask the user first
+- workflow files are high-risk — changes require explicit user request
+</constraints>
+
+---
+
 ## Context Strategy
 
 How to manage what the agent sees:
