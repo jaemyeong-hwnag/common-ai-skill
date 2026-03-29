@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.5.0] - 2026-03-29
+
+### Added
+-  add PR result feedback workflow (layer 6)
+-  add structural validation tests (layers 4, 5)
+-  add permission boundary and execution sandbox to CLAUDE.md (layers 2, 3)
+-  add CLAUDE.md with harness engineering layers 1, 7, 8
+-  add harness-engineering skill
+
+### Fixed
+-  remove auto-select entry to pass abstraction check
+-  abstract auto-select routing description for harness-engineering
+
+
 ## [1.4.0] - 2026-03-29
 
 ### Changed

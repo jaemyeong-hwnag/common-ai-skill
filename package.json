@@ -1,6 +1,6 @@
 {
   "name": "ai-skill-interface",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Abstract skill interfaces for AI — delivery, testing, architecture, security, and more. Skills define WHAT; AI decides HOW.",
   "keywords": ["ai", "claude", "skills", "llm", "prompt", "engineering", "interface", "abstract"],
   "license": "MIT",
