@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.6.0] - 2026-03-30
+
+### Added
+-  add npm and PyPI publish steps to release workflow
+-  support multiple AI agents in init — Cursor, Windsurf, Copilot, Cline
+-  add 'init' subcommand — auto-detect project and generate CLAUDE.md
+
+### Changed
+-  simplify init — delegate skill selection to AI via auto-select
+
+
 ## [1.5.0] - 2026-03-29
 
 ### Added
