@@ -29,6 +29,51 @@ const SKILLS = [
   "auto-select",
 ];
 
+// Agent configs: each defines how to write the auto-select entry point
+// claude uses @import; others inline the skill content (no import support)
+const AGENTS = [
+  {
+    name: "claude",
+    file: "CLAUDE.md",
+    detect: () => true, // always included as default
+    write: (content) => content,
+    entry: () => "@~/.claude/skills/auto-select/SKILL.md\n",
+    marker: "auto-select/SKILL.md",
+  },
+  {
+    name: "cursor",
+    file: ".cursor/rules",
+    detect: (cwd) => fs.existsSync(path.join(cwd, ".cursor")),
+    write: (content) => content,
+    entry: (autoSelectContent) => autoSelectContent,
+    marker: "auto-select",
+  },
+  {
+    name: "windsurf",
+    file: ".windsurfrules",
+    detect: (cwd) => fs.existsSync(path.join(cwd, ".windsurfrules")),
+    write: (content) => content,
+    entry: (autoSelectContent) => autoSelectContent,
+    marker: "auto-select",
+  },
+  {
+    name: "copilot",
+    file: ".github/copilot-instructions.md",
+    detect: (cwd) => fs.existsSync(path.join(cwd, ".github")),
+    write: (content) => content,
+    entry: (autoSelectContent) => autoSelectContent,
+    marker: "auto-select",
+  },
+  {
+    name: "cline",
+    file: ".clinerules",
+    detect: (cwd) => fs.existsSync(path.join(cwd, ".clinerules")),
+    write: (content) => content,
+    entry: (autoSelectContent) => autoSelectContent,
+    marker: "auto-select",
+  },
+];
+
 function installGlobal() {
   fs.mkdirSync(SKILLS_DEST, { recursive: true });
 
@@ -48,24 +93,48 @@ function installGlobal() {
   console.log(`✓ Installed ${installed} skills to ${SKILLS_DEST}`);
 }
 
+function readAutoSelectContent() {
+  const src = path.join(SKILLS_SRC, "auto-select", "SKILL.md");
+  return fs.readFileSync(src, "utf8");
+}
+
+function writeAgentConfig(cwd, agent, autoSelectContent) {
+  const filePath = path.join(cwd, agent.file);
+  const entry = agent.entry(autoSelectContent);
+
+  // ensure parent directory exists
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+
+  if (fs.existsSync(filePath)) {
+    const existing = fs.readFileSync(filePath, "utf8");
+    if (existing.includes(agent.marker)) {
+      console.log(`  ✓ ${agent.file} already configured`);
+    } else {
+      fs.appendFileSync(filePath, "\n" + entry);
+      console.log(`  ✓ ${agent.file} updated`);
+    }
+  } else {
+    fs.writeFileSync(filePath, entry);
+    console.log(`  ✓ ${agent.file} created`);
+  }
+}
+
+function detectAgents(cwd) {
+  return AGENTS.filter((a) => a.detect(cwd));
+}
+
 function initProject(cwd) {
   installGlobal();
   console.log("");
 
-  const claudeMdPath = path.join(cwd, "CLAUDE.md");
-  const entry = "@~/.claude/skills/auto-select/SKILL.md";
+  const autoSelectContent = readAutoSelectContent();
+  const detected = detectAgents(cwd);
 
-  if (fs.existsSync(claudeMdPath)) {
-    const existing = fs.readFileSync(claudeMdPath, "utf8");
-    if (existing.includes("auto-select/SKILL.md")) {
-      console.log("✓ CLAUDE.md already includes auto-select");
-    } else {
-      fs.appendFileSync(claudeMdPath, "\n" + entry + "\n");
-      console.log("✓ Added auto-select to existing CLAUDE.md");
-    }
-  } else {
-    fs.writeFileSync(claudeMdPath, entry + "\n");
-    console.log("✓ Created CLAUDE.md");
+  console.log(`Detected agents: ${detected.map((a) => a.name).join(", ")}`);
+  console.log("");
+
+  for (const agent of detected) {
+    writeAgentConfig(cwd, agent, autoSelectContent);
   }
 
   console.log("");
