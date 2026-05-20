@@ -12,8 +12,10 @@ const SKILLS = [
   "test-runner",
   "coverage",
   "finalize",
+  "self-recovery",
   "hexagonal-development",
   "interface-first-development",
+  "code-documentation",
   "docs-sync",
   "security-audit",
   "version",
@@ -21,6 +23,8 @@ const SKILLS = [
   "principle-audit",
   "framework-selection",
   "rag-development",
+  "rag-failure-diagnosis",
+  "rag-regression-testing",
   "observability",
   "evaluation",
   "human-in-the-loop",
@@ -139,7 +143,7 @@ function initProject(cwd) {
 
   console.log("");
   console.log("AI will analyze this project and select skills automatically.");
-  console.log(`All 19 skills are available at: ${SKILLS_DEST}`);
+  console.log(`All ${SKILLS.length} skills are available at: ${SKILLS_DEST}`);
 }
 
 const subcommand = process.argv[2];
