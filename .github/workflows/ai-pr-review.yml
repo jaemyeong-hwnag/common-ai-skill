@@ -66,7 +66,16 @@ jobs:
 
       - name: Detect changed SKILL.md files and extract diff
         id: detect
+        env:
+          BRANCH: ${{ github.head_ref }}
         run: |
+          # release/* branches promote changes already reviewed on develop.
+          if echo "$BRANCH" | grep -qE '^release/'; then
+            echo "Release branch — SKILL abstraction recheck skipped: $BRANCH"
+            echo "has_skills=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep 'SKILL\.md' || true)
           if [ -z "$FILES" ]; then
             echo "has_skills=false" >> $GITHUB_OUTPUT
