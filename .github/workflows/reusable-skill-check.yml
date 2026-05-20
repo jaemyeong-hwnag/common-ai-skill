@@ -87,22 +87,22 @@ jobs:
                   "All output must be in English."
               )
 
-              payload = {{
+              payload = {
                 "model": "gpt-4o-mini",
                 "messages": [
-                  {{"role": "system", "content": system_prompt}},
-                  {{"role": "user", "content": f"Review this PR diff for skill compliance:\n\n{{diff}}"}}
+                  {"role": "system", "content": system_prompt},
+                  {"role": "user", "content": f"Review this PR diff for skill compliance:\n\n{diff}"}
                 ],
-                "response_format": {{"type": "json_object"}}
-              }}
+                "response_format": {"type": "json_object"}
+              }
 
               req = urllib.request.Request(
                 "https://models.inference.ai.azure.com/chat/completions",
                 data=json.dumps(payload).encode(),
-                headers={{
-                  "Authorization": f"Bearer {{os.environ['GITHUB_TOKEN']}}",
+                headers={
+                  "Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}",
                   "Content-Type": "application/json"
-                }}
+                }
               )
               with urllib.request.urlopen(req) as resp:
                   raw = json.loads(resp.read())
@@ -115,11 +115,13 @@ jobs:
           with open(os.environ["GITHUB_OUTPUT"], "a") as f:
               f.write(f"passed={passed}\n")
               f.write(f"summary={summary}\n")
-              v_lines = "\n".join(
-                  f"- **[{v.get('skill','?')}]** {v['description']}\n  > Fix: {v.get('suggestion','')}"
-                  for v in violations
-              ) if violations else "None"
-              f.write(f"violations={v_lines}\n")
+
+          v_lines = "\n".join(
+              f"- **[{v.get('skill','?')}]** {v['description']}\n  > Fix: {v.get('suggestion','')}"
+              for v in violations
+          ) if violations else "None"
+          with open("/tmp/skill_violations.txt", "w") as f:
+              f.write(v_lines)
 
           print(f"passed={passed}, violations={len(violations)}")
           PYEOF
@@ -130,7 +132,6 @@ jobs:
         run: |
           PASSED="${{ steps.compliance.outputs.passed }}"
           SUMMARY="${{ steps.compliance.outputs.summary }}"
-          VIOLATIONS="${{ steps.compliance.outputs.violations }}"
           SKILLS="${{ inputs.skills }}"
 
           if [ "$PASSED" = "true" ]; then
@@ -149,7 +150,7 @@ jobs:
             echo "**Summary:** $SUMMARY"
             echo ""
             echo "**Violations:**"
-            echo "$VIOLATIONS"
+            cat /tmp/skill_violations.txt
             echo ""
             echo "---"
             echo "*Powered by [ai-skill-interface](https://github.com/jaemyeong-hwnag/ai-skill-interface)*"
