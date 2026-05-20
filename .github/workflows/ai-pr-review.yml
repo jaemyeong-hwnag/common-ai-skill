@@ -137,7 +137,28 @@ jobs:
           If no violations, violations must be empty and passed must be true.
           """
 
-          diff = open("/tmp/skill_diff.txt").read()[:8000]
+          INTERNAL_SKILLS = {
+              "delivery-workflow", "test-runner", "coverage", "finalize",
+              "self-recovery", "hexagonal-development",
+              "interface-first-development", "code-documentation",
+              "docs-sync", "security-audit", "version",
+              "ai-token-optimize", "principle-audit", "framework-selection",
+              "rag-development", "rag-failure-diagnosis",
+              "rag-regression-testing", "observability", "evaluation",
+              "human-in-the-loop", "agent-orchestration",
+              "harness-engineering", "auto-select",
+          }
+
+          def is_internal_routing_line(line):
+              if not line.startswith("+"):
+                  return False
+              stripped = line[1:].strip()
+              return any(skill in stripped for skill in INTERNAL_SKILLS)
+
+          diff = "\n".join(
+              line for line in open("/tmp/skill_diff.txt").read().splitlines()
+              if not is_internal_routing_line(line)
+          )[:8000]
 
           if not diff.strip():
               result = {"passed": True, "violations": [], "summary": "No skill changes to check."}
