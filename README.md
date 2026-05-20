@@ -44,11 +44,14 @@ change.type=code
   → delivery-workflow
   + hexagonal-development   (arch.pattern=hexagonal or layered)
   + interface-first-development (change.scope=interface)
+  + code-documentation      (change.scope=interface or public surface changed)
   → finalize                (after completion)
 
 change.type=ai-feature
   → framework-selection     (always first)
   + rag-development         (retrieval pipeline present)
+  + rag-failure-diagnosis   (RAG answer quality failure reported)
+  + rag-regression-testing  (RAG retrieval/generation behavior changed after failure)
   + observability           (ai.complexity≥pipeline)
   + evaluation              (quality measurement needed)
   + human-in-the-loop       (action.risk=irreversible)
@@ -57,7 +60,7 @@ change.type=ai-feature
 
 change.type=explicit
   → /version /security-audit /principle-audit /ai-token-optimize
-    /coverage /test-runner /finalize
+    /coverage /test-runner /finalize /self-recovery
 ```
 
 ## Composition
@@ -213,6 +216,31 @@ all tests pass + coverage ≥80% + docs synced + commits created
 
 ---
 
+### self-recovery
+> Recover failed, stalled, looping, or unsafe AI-run work by monitoring execution, stopping stale attempts, diagnosing root cause, applying the smallest safe fix, verifying, and reporting evidence.
+
+**Sequence**
+
+define success/failure/rollback → run with a timer → monitor evidence → stop stale or unsafe work → classify cause → fix smallest local cause → verify → restart only when safe → report evidence
+
+**Rules**
+<constraints>
+- define success and failure before starting work
+- use adaptive check intervals based on the task's expected progress
+- stop stale, duplicate, crashed, or unsafe execution before changing state
+- never repeat the same failed attempt without a new cause, fix, or diagnostic
+- classify the root cause before applying a fix
+- prefer the smallest reversible local fix
+- restart only after verification or after choosing a safe degraded path
+</constraints>
+
+**Done**
+<criteria>
+failed or stale work stopped + cause classified + smallest safe fix applied or blocker reported + verification evidence collected + final state reported
+</criteria>
+
+---
+
 ### docs-sync
 > Detect documentation drift from recent code changes and synchronize docs to match the current codebase.
 
@@ -238,6 +266,29 @@ scan project docs → identify changed code → map changes to affected docs →
 - sync TOC with actual headings
 - remove duplicate content
 </constraints>
+
+---
+
+### code-documentation
+> Document public code surfaces and API behavior using the project's native documentation conventions while avoiding redundant comments and private implementation noise.
+
+**Sequence**
+
+detect documentation conventions → identify public surfaces → document intent, inputs, outputs, errors, and side effects → document externally visible contracts → remove or avoid redundant comments → verify style consistency
+
+**Rules**
+<constraints>
+- document public surfaces, caller expectations, errors, and side effects
+- do not restate obvious code literally
+- do not expose private implementation details unless they explain non-obvious behavior
+- do not replace existing correct comments
+- preserve the surrounding project's documentation style
+</constraints>
+
+**Done**
+<criteria>
+public surfaces documented + external contracts clear + stale comments updated + redundant comments avoided + project documentation style preserved
+</criteria>
 
 ---
 
@@ -404,6 +455,61 @@ ingest → chunk → embed → store → retrieve → rerank → generate
 **Done**
 <criteria>
 all stages present + metadata preserved + embedding model consistent + sources attributed in output
+</criteria>
+
+---
+
+### rag-failure-diagnosis
+> Diagnose failures in retrieval-augmented answers by assigning the first failing subsystem: retrieval, generation, server behavior, guardrails, or a combination.
+
+**Sequence**
+
+capture question and answer → inspect retrieved evidence → compare evidence to question → compare answer to evidence → inspect fallback or guardrail behavior → assign first failing subsystem → recommend smallest next fix
+
+**Verdicts**
+
+retrieval failure | generation failure | server or guardrail failure | combined failure | insufficient evidence to decide
+
+**Rules**
+<constraints>
+- judge retrieval before judging generation
+- if evidence is missing, wrong, or indirect, classify retrieval first
+- if evidence is correct but the answer ignores or changes it, classify generation
+- if fallback or guardrail behavior overrides useful evidence, classify server or guardrail behavior
+- name the failing subsystem instead of using vague quality labels
+</constraints>
+
+**Done**
+<criteria>
+clear subsystem verdict + evidence-backed cause + next fix scoped to retrieval, generation, server behavior, guardrails, or data
+</criteria>
+
+---
+
+### rag-regression-testing
+> Verify retrieval-augmented generation fixes with same-case, nearby-case, and unrelated-case tests after changing data, retrieval, ranking, prompting, fallback, or guardrail behavior.
+
+**Sequence**
+
+apply targeted fix → refresh affected retrieval state if needed → run same-case test → run nearby-case test → run unrelated-case test → inspect retrieval and answer for each → report pass or fail
+
+**Required Cases**
+
+same case: exact failed scenario | nearby case: close variant | unrelated case: distinct question or domain
+
+**Rules**
+<constraints>
+- inspect retrieved evidence and final answer for every test
+- same-case retrieval must include directly relevant evidence
+- nearby-case retrieval must prove the fix generalizes beyond one wording
+- unrelated-case retrieval must avoid the previous false-positive pattern
+- final answers must stay within retrieved evidence
+- do not call the fix complete when only the exact failed case passes
+</constraints>
+
+**Done**
+<criteria>
+same-case, nearby-case, and unrelated-case tests run + retrieval inspected + final answers inspected + remaining risks reported
 </criteria>
 
 ---

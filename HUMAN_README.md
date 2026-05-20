@@ -41,7 +41,7 @@ The tool changes. The skill does not. AI is the adapter.
 ## 설치 / Install
 
 ```bash
-# npm — installs 19 skills to ~/.claude/skills/
+# npm — installs 23 skills to ~/.claude/skills/
 npx ai-skill-interface
 
 # pip
@@ -56,7 +56,7 @@ After install, skills apply automatically across all your projects.
 
 ---
 
-## 스킬 목록 / Skills (19)
+## 스킬 목록 / Skills (23)
 
 | 스킬 / Skill | 적용 시점 / When | 하는 일 / Does |
 |---|---|---|
@@ -64,8 +64,10 @@ After install, skills apply automatically across all your projects.
 | `test-runner` | 테스트 실행 / run tests | 프레임워크 자동 탐지, 전체 실행 / auto-detect framework, run suite |
 | `coverage` | 커버리지 미달 / coverage gap | 80% 달성까지 누락 테스트 작성 / write tests until 80%+ |
 | `finalize` | 기능/수정 완료 후 / after feature or fix | 테스트 → 커버리지 → 문서 → 커밋 파이프라인 / test → coverage → docs → commit |
+| `self-recovery` | 실행 실패·중단 / failed or stalled execution | 중단 → 진단 → 수정 → 검증 / stop → diagnose → fix → verify |
 | `hexagonal-development` | 레이어드 아키텍처 / layered arch | 레이어 경계 탐지 및 강제 / detect and enforce layer boundaries |
 | `interface-first-development` | 추상화 추가/변경 / abstraction change | 구현 전 계약 먼저 정의 / define contract before implementation |
+| `code-documentation` | 공개 API 문서화 / public API docs | 프로젝트 스타일로 공개 표면 문서화 / document public surfaces in project style |
 | `framework-selection` | 도구/아키텍처 선택 / tool or arch choice | 최소 복잡도 솔루션 선택 / select lowest-complexity solution |
 | `docs-sync` | 코드 변경 후 / after code change | 문서 드리프트 감지 및 동기화 / detect and sync doc drift |
 | `security-audit` | 온디맨드 / on demand | 시크릿·취약점·인젝션 패턴 탐지 / secrets, vulnerabilities, injection |
@@ -76,6 +78,8 @@ After install, skills apply automatically across all your projects.
 | `human-in-the-loop` | 비가역적 작업 / irreversible actions | 인터럽트 → 승인 → 재개 / interrupt → approval → resume |
 | `agent-orchestration` | 멀티 에이전트 / multi-agent | 라우팅·위임·병렬 처리 / routing, delegation, parallelism |
 | `rag-development` | RAG 파이프라인 / RAG pipeline | 수집 → 청킹 → 임베딩 → 검색 → 생성 / ingest → chunk → embed → retrieve → generate |
+| `rag-failure-diagnosis` | RAG 답변 실패 / RAG answer failure | 검색·생성·서버 책임 판정 / assign retrieval, generation, or server fault |
+| `rag-regression-testing` | RAG 수정 후 / after RAG fix | 동일·유사·무관 케이스 검증 / same, nearby, unrelated regression tests |
 | `version` | 릴리즈 전 / before release | 버전 탐지·범프·CHANGELOG·태그 / detect, bump, changelog, tag |
 | `auto-select` | 항상 (메타 스킬) / always (meta-skill) | 컨텍스트 시그널로 스킬 자동 선택 / auto-select skills from context signals |
 | `harness-engineering` | 에이전트 런타임 설계 / agent runtime design | 컨텍스트·권한·샌드박스·검증 레이어 / context, permission, sandbox, validation layers |
