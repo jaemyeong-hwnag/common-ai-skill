@@ -44,23 +44,18 @@ change.type=code
   → delivery-workflow
   + hexagonal-development   (arch.pattern=hexagonal or layered)
   + interface-first-development (change.scope=interface)
-  + code-documentation      (change.scope=interface or public surface changed)
   → finalize                (after completion)
 
 change.type=ai-feature
   → framework-selection     (always first)
   + rag-development         (retrieval pipeline present)
-  + rag-failure-diagnosis   (RAG answer quality failure reported)
-  + rag-regression-testing  (RAG retrieval/generation behavior changed after failure)
   + observability           (ai.complexity≥pipeline)
   + evaluation              (quality measurement needed)
   + human-in-the-loop       (action.risk=irreversible)
   + agent-orchestration     (ai.complexity=multi-agent)
-  + harness-engineering     (agent runtime design, guardrails, or sandboxing involved)
 
 change.type=explicit
-  → /version /security-audit /principle-audit /ai-token-optimize
-    /coverage /test-runner /finalize /self-recovery
+  → the skill the user named directly
 ```
 
 ## Composition

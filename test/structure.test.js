@@ -5,6 +5,22 @@ const assert = require("assert");
 const SKILLS_DIR = path.resolve(__dirname, "../skills");
 const README = path.resolve(__dirname, "../README.md");
 
+function installedSkills() {
+  return fs
+    .readdirSync(SKILLS_DIR)
+    .filter((skill) => fs.existsSync(path.join(SKILLS_DIR, skill, "SKILL.md")))
+    .sort();
+}
+
+function extractFencedBlockAfterHeading(content, heading) {
+  const start = content.indexOf(heading);
+  assert.ok(start >= 0, `missing heading: ${heading}`);
+
+  const match = content.slice(start).match(/```(?:[a-zA-Z0-9_-]+)?\n([\s\S]*?)\n```/);
+  assert.ok(match, `missing fenced block after heading: ${heading}`);
+  return match[1].trim();
+}
+
 // ── Test 1: Every SKILL.md has valid YAML frontmatter ────────────────────────
 {
   const skills = fs.readdirSync(SKILLS_DIR);
@@ -155,18 +171,65 @@ const README = path.resolve(__dirname, "../README.md");
     path.resolve(__dirname, "../bin/init.js"),
     "utf8"
   );
-  const dirSkills = fs.readdirSync(SKILLS_DIR).sort();
+  const pythonInstaller = fs.readFileSync(
+    path.resolve(__dirname, "../ai_skill_interface/install.py"),
+    "utf8"
+  );
+  const dirSkills = installedSkills();
 
   for (const skill of dirSkills) {
-    const file = path.join(SKILLS_DIR, skill, "SKILL.md");
-    if (!fs.existsSync(file)) continue;
-
     assert.ok(
       initScript.includes(`"${skill}"`),
       `bin/init.js SKILLS array must include "${skill}"`
     );
+    assert.ok(
+      pythonInstaller.includes(`"${skill}"`),
+      `ai_skill_interface/install.py SKILLS array must include "${skill}"`
+    );
   }
-  console.log("✓ bin/init.js SKILLS array matches skills/ directory");
+  console.log("✓ installer SKILLS arrays match skills/ directory");
+}
+
+// ── Test 7: README auto-selection mirrors auto-select entrypoint ─────────────
+{
+  const readme = fs.readFileSync(README, "utf8");
+  const autoSelect = fs.readFileSync(
+    path.join(SKILLS_DIR, "auto-select", "SKILL.md"),
+    "utf8"
+  );
+
+  const readmeRules = extractFencedBlockAfterHeading(readme, "## Auto-Selection");
+  const entrypointRules = extractFencedBlockAfterHeading(
+    autoSelect,
+    "## Selection Rules"
+  );
+
+  assert.strictEqual(
+    entrypointRules,
+    readmeRules,
+    "skills/auto-select/SKILL.md selection rules must mirror README.md Auto-Selection"
+  );
+  console.log("✓ auto-select selection rules mirror README.md");
+}
+
+// ── Test 8: Reusable workflow embedded Python is not double-escaped ──────────
+{
+  const workflow = fs.readFileSync(
+    path.resolve(__dirname, "../.github/workflows/reusable-skill-check.yml"),
+    "utf8"
+  );
+
+  for (const invalid of ["payload = {{", "headers={{", "{{diff}}", "{{os.environ"]) {
+    assert.ok(
+      !workflow.includes(invalid),
+      `reusable-skill-check.yml contains invalid Python escape: ${invalid}`
+    );
+  }
+  assert.ok(
+    workflow.includes("cat /tmp/skill_violations.txt"),
+    "reusable-skill-check.yml must write multiline violations through a file"
+  );
+  console.log("✓ reusable workflow embedded Python is validly escaped");
 }
 
 console.log("\nAll structure tests passed.");
