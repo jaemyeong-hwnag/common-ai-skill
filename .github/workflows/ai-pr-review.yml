@@ -101,9 +101,16 @@ jobs:
             "requires: [test-runner, coverage, framework-selection]" reference OTHER
             SKILLS in this repository — they are internal cross-references, not
             external tool/framework names. Always approve frontmatter changes.
-          - Selection-rule references to installed skill names (for example
-            "delivery-workflow", "coverage", or "framework-selection"). These
-            are internal routing labels, not external tool/framework names.
+          - Selection-rule references to installed skill names. These are
+            internal routing labels, not external tool/framework names. NEVER
+            flag a line merely because it names one of these internal skills:
+            delivery-workflow, test-runner, coverage, finalize, self-recovery,
+            hexagonal-development, interface-first-development,
+            code-documentation, docs-sync, security-audit, version,
+            ai-token-optimize, principle-audit, framework-selection,
+            rag-development, rag-failure-diagnosis, rag-regression-testing,
+            observability, evaluation, human-in-the-loop, agent-orchestration,
+            harness-engineering, auto-select.
           - Domain-level abstract concepts: "agent", "orchestrator", "embedding",
             "retrieval", "coverage target", "adapter", "port", "layer", "commit",
             "correlation ID", numeric thresholds (e.g., "80%").
