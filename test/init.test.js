@@ -49,7 +49,7 @@ withTempDir((homeDir) => {
   console.log("✓ idempotent — re-run does not duplicate");
 });
 
-// Test 3: all 19 skills are installed
+// Test 3: all skills are installed
 withTempDir((homeDir) => {
   runInit(homeDir);
   const dest = skillsDir(homeDir);
@@ -58,8 +58,10 @@ withTempDir((homeDir) => {
     "test-runner",
     "coverage",
     "finalize",
+    "self-recovery",
     "hexagonal-development",
     "interface-first-development",
+    "code-documentation",
     "docs-sync",
     "security-audit",
     "version",
@@ -67,6 +69,8 @@ withTempDir((homeDir) => {
     "principle-audit",
     "framework-selection",
     "rag-development",
+    "rag-failure-diagnosis",
+    "rag-regression-testing",
     "observability",
     "evaluation",
     "human-in-the-loop",

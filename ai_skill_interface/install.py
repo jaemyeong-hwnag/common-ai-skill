@@ -8,8 +8,10 @@ SKILLS = [
     "test-runner",
     "coverage",
     "finalize",
+    "self-recovery",
     "hexagonal-development",
     "interface-first-development",
+    "code-documentation",
     "docs-sync",
     "security-audit",
     "version",
@@ -17,6 +19,8 @@ SKILLS = [
     "principle-audit",
     "framework-selection",
     "rag-development",
+    "rag-failure-diagnosis",
+    "rag-regression-testing",
     "observability",
     "evaluation",
     "human-in-the-loop",
@@ -131,7 +135,7 @@ def init_project(cwd: Path) -> None:
 
     print()
     print("AI will analyze this project and select skills automatically.")
-    print(f"All 19 skills are available at: {skills_dest()}")
+    print(f"All {len(SKILLS)} skills are available at: {skills_dest()}")
 
 
 def main() -> None:

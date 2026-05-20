@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.7.0] - 2026-05-20
+
+### Added
+- add `self-recovery` for execution monitoring, diagnosis, recovery, and evidence reporting
+- add `code-documentation` for project-native public surface and API documentation
+- add `rag-failure-diagnosis` for retrieval, generation, server, and guardrail fault assignment
+- add `rag-regression-testing` for same-case, nearby-case, and unrelated-case RAG verification
+
+### Changed
+- update installer lists, README indexes, auto-selection rules, and package versions for 23 skills
+
 ## [1.6.0] - 2026-03-30
 
 ### Added
