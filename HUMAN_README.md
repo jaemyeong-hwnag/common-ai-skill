@@ -5,6 +5,9 @@
 **스킬 = 인터페이스. AI = 구현체.**
 **Skills are interfaces. AI is the implementation.**
 
+**AI 코딩 에이전트를 위한 이식 가능한 운영 계약.**
+**A portable operating contract for AI coding agents.**
+
 [![npm version](https://img.shields.io/npm/v/ai-skill-interface)](https://www.npmjs.com/package/ai-skill-interface)
 [![PyPI version](https://img.shields.io/pypi/v/ai-skill-interface)](https://pypi.org/project/ai-skill-interface/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -17,6 +20,12 @@
 
 **스킬은 인터페이스입니다. AI가 구현체입니다.**
 **Skills are interfaces. AI is the implementation.**
+
+ai-skill-interface는 스킬 마켓플레이스나 레지스트리가 아닙니다.
+AI 코딩 에이전트가 프로젝트마다 지켜야 할 **개발 운영 계약**입니다.
+
+ai-skill-interface is not a skill marketplace or registry.
+It is a **development operating contract** for AI coding agents across projects.
 
 스킬은 **무엇을(WHAT)** 달성해야 하는지만 정의합니다. **어떻게(HOW)**는 AI가 프로젝트를 분석해서 결정합니다.
 
@@ -38,17 +47,30 @@ The tool changes. The skill does not. AI is the adapter.
 
 ---
 
+## 무엇이 다른가요? / What is different?
+
+| 다른 도구 / Other tools | ai-skill-interface |
+|---|---|
+| 스킬 검색·설치·배포 / Discover, install, publish skills | AI가 지켜야 할 개발 운영 계약 / Operating contracts agents must satisfy |
+| 특정 도구·도메인 사용법 / Tool- or domain-specific instructions | 테스트, 커버리지, 문서, 보안, 복구, RAG 진단 같은 메타 개발 능력 / Meta development capabilities such as tests, coverage, docs, security, recovery, and RAG diagnosis |
+| 레지스트리와 패키지 매니저 / Registries and package managers | 어떤 프로젝트에서도 재사용되는 WHAT 중심 인터페이스 / WHAT-first interfaces reusable across projects |
+
+패키지 매니저는 스킬을 배포합니다. 이 프로젝트는 AI 에이전트가 매번 만족해야 할 행동 계약을 정의합니다.
+Package managers distribute skills. This project defines the behavior contracts an AI agent should satisfy every time.
+
+---
+
 ## 설치 / Install
 
 ```bash
-# npm — installs 23 skills to ~/.claude/skills/
+# npm — installs 25 skills to ~/.claude/skills/
 npx ai-skill-interface
 
 # pip
 pip install ai-skill-interface && ai-skill-interface
 
 # git submodule (팀 프로젝트, 버전 고정 / team projects, version-locked)
-curl -sL https://raw.githubusercontent.com/jaemyeong-hwnag/ai-skill-interface/main/scripts/submodule-install.sh | sh
+curl -sL https://raw.githubusercontent.com/jaemyeong-hwnag/common-ai-skill/main/scripts/submodule-install.sh | sh
 ```
 
 설치 후 모든 프로젝트에서 자동 적용됩니다.
@@ -56,7 +78,7 @@ After install, skills apply automatically across all your projects.
 
 ---
 
-## 스킬 목록 / Skills (23)
+## 스킬 목록 / Skills (25)
 
 | 스킬 / Skill | 적용 시점 / When | 하는 일 / Does |
 |---|---|---|
@@ -72,6 +94,7 @@ After install, skills apply automatically across all your projects.
 | `docs-sync` | 코드 변경 후 / after code change | 문서 드리프트 감지 및 동기화 / detect and sync doc drift |
 | `security-audit` | 온디맨드 / on demand | 시크릿·취약점·인젝션 패턴 탐지 / secrets, vulnerabilities, injection |
 | `ai-token-optimize` | AI용 코드 작성 / writing AI-consumed code | 프롬프트·툴 출력 토큰 절감 / reduce tokens in prompts and tool outputs |
+| `ai-token-efficiency-research` | 토큰 효율 연구 / token efficiency research | 비용·품질 트레이드오프를 논문 근거로 판단 / use research evidence for cost-quality trade-offs |
 | `principle-audit` | 온디맨드 / on demand | 프로젝트 원칙 위반 탐지 / detect principle violations |
 | `observability` | AI 워크플로우 구현 / AI workflow | 모델 호출·상태 전환 계측 / trace model calls and state transitions |
 | `evaluation` | AI 품질 측정 / AI quality | 데이터셋 생성, 평가자 작성 / create datasets, write evaluators |
@@ -83,6 +106,7 @@ After install, skills apply automatically across all your projects.
 | `version` | 릴리즈 전 / before release | 버전 탐지·범프·CHANGELOG·태그 / detect, bump, changelog, tag |
 | `auto-select` | 항상 (메타 스킬) / always (meta-skill) | 컨텍스트 시그널로 스킬 자동 선택 / auto-select skills from context signals |
 | `harness-engineering` | 에이전트 런타임 설계 / agent runtime design | 컨텍스트·권한·샌드박스·검증 레이어 / context, permission, sandbox, validation layers |
+| `paper-research` | 기술 근거 확인 / technical evidence | 논문·선행 연구 기반 근거 보강 / strengthen answers with academic evidence |
 
 ---
 
@@ -112,8 +136,8 @@ Skills are model-agnostic — they work with any LLM.
 ### 새 스킬이 필요할 때 / Need a new skill?
 
 ```
-"ai-skill-interface 레포에 <필요한 스킬> 이슈 발행하고 PR까지 올려줘"
-"Open an issue and PR on the ai-skill-interface repo for a <skill-name> skill"
+"common-ai-skill 레포에 <필요한 스킬> 이슈 발행하고 PR까지 올려줘"
+"Open an issue and PR on the common-ai-skill repo for a <skill-name> skill"
 ```
 
 AI가 자동으로: 이슈 생성 → 브랜치 → SKILL.md 작성 → PR → AI 리뷰 → 머지까지 처리합니다.
