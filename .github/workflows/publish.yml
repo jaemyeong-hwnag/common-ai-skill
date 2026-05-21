@@ -14,6 +14,10 @@ jobs:
   publish-npm:
     name: Publish to npm
     runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,17 +25,19 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public
 
   publish-pypi:
     name: Publish to PyPI
     runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,11 +47,10 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Build and publish
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+      - name: Build
         run: |
-          pip install build twine
+          pip install build
           python -m build
-          twine upload dist/*
+
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1

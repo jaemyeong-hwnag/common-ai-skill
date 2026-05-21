@@ -12,9 +12,9 @@ MARKER_END="<!-- ai-skill-interface:end -->"
 SKILLS="delivery-workflow test-runner coverage finalize self-recovery \
 hexagonal-development interface-first-development code-documentation docs-sync \
 security-audit version ai-token-optimize principle-audit framework-selection \
-rag-development rag-failure-diagnosis rag-regression-testing observability \
-evaluation human-in-the-loop agent-orchestration harness-engineering \
-paper-research auto-select"
+ai-token-efficiency-research rag-development rag-failure-diagnosis \
+rag-regression-testing observability evaluation human-in-the-loop \
+agent-orchestration harness-engineering paper-research auto-select"
 
 # Add submodule if not already present
 if [ ! -f ".gitmodules" ] || ! grep -q "$SUBMODULE_PATH" ".gitmodules" 2>/dev/null; then
