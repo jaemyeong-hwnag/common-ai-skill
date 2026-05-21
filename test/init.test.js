@@ -66,6 +66,7 @@ withTempDir((homeDir) => {
     "security-audit",
     "version",
     "ai-token-optimize",
+    "ai-token-efficiency-research",
     "principle-audit",
     "paper-research",
     "framework-selection",

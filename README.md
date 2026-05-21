@@ -371,6 +371,55 @@ labels compressed + collections tabular + numerics notation-formatted + critical
 
 ---
 
+### ai-token-efficiency-research
+> Use research evidence to choose token-efficiency and cost-reduction options for AI systems.
+
+**Scope**
+
+reducing unnecessary input material → reducing retained runtime state → reusing stable context → retaining and retrieving durable context → resource, quality, stability, and safety trade-offs → process-level value analysis
+
+**Activation**
+
+Trigger this skill when the user asks how to reduce token cost while maintaining quality, which efficiency strategy fits a workload, for source-backed evidence in token efficiency, for a research-backed skill or reference document, or why a token-saving option changes quality, time, or operating cost.
+
+Skip when the request has no research depth, official pricing or documentation is the primary source of truth, the user asks for a quick non-research answer, or the task has no token-efficiency question.
+
+**Research Map**
+
+identify avoidable material → reduce retained runtime state → reuse stable context across repeated work → retain and retrieve durable context → locate process steps with poor value for their cost
+
+**Workflow**
+
+identify workload shape → map to research area → prefer primary sources, evaluation reports, and maintained evidence → verify all quantitative claims before reporting them → compare applicability, expected value, quality risk, operational complexity, and failure modes → recommend a path and measurement plan
+
+**Evidence Requirements**
+<constraints>
+- numeric claims must be sourced, current, and tied to the reported conditions
+- preprint, peer-reviewed, project-site, evaluation, and secondary-summary evidence must be clearly distinguishable
+- do not generalize one result to all settings
+- savings claims must account for all relevant usage
+- efficiency methods must include quality and operational caveats
+- stale or unverified research claims must be labeled as unverified or omitted
+</constraints>
+
+**Output**
+
+```
+Recommendation: <selected option>
+Fit: <why it applies>
+Evidence: <sourced support or measure-first note>
+Limit: <main caveat>
+Validation: <first check>
+Sources: <source identifiers>
+```
+
+**Done**
+<criteria>
+the answer maps the workload to the right option + research claims are sourced and scoped + trade-offs are explicit + recommendation includes a measurement path + unsupported numbers are not reported
+</criteria>
+
+---
+
 ### principle-audit
 > Audit the codebase for violations of the project's core principles — detect unintended system-imposed constraints that contradict the project's stated goals.
 
