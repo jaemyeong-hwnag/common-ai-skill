@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.8.0] - 2026-05-21
+
+### Added
+-  add ai token efficiency research skill
+-  add paper research skill
+-  add reusable operational skills
+-  add publish.yml — trigger npm and PyPI publish on GitHub Release
+-  add npm and PyPI publish steps to release workflow
+-  support multiple AI agents in init — Cursor, Windsurf, Copilot, Cline
+-  add 'init' subcommand — auto-detect project and generate CLAUDE.md
+
+### Changed
+-  simplify init — delegate skill selection to AI via auto-select
+
+### Fixed
+-  use trusted publishing for releases
+-  complete auto-select sync
+-  filter internal skill routing labels
+-  harden skill abstraction routing
+-  repair skill workflow drift
+
+
 ## [1.7.0] - 2026-05-20
 
 ### Added
