@@ -249,4 +249,30 @@ function extractFencedBlockAfterHeading(content, heading) {
   console.log("✓ reusable workflow embedded Python is validly escaped");
 }
 
+// ── Test 10: Release post-merge handles bot-created release merges ───────────
+{
+  const workflow = fs.readFileSync(
+    path.resolve(__dirname, "../.github/workflows/release-merge.yml"),
+    "utf8"
+  );
+
+  assert.ok(
+    workflow.includes("workflow_run:"),
+    "release-merge.yml must handle workflow_run events from bot-created PR merges"
+  );
+  assert.ok(
+    workflow.includes('workflows: ["AI PR Review & Auto-merge"]'),
+    "release-merge.yml workflow_run trigger must listen to AI PR Review & Auto-merge"
+  );
+  assert.ok(
+    workflow.includes("git merge-base --is-ancestor"),
+    "release-merge.yml must verify the release commit reached main before post-merge actions"
+  );
+  assert.ok(
+    workflow.includes("^release/[0-9]+\\.[0-9]+\\.[0-9]+$"),
+    "release-merge.yml must limit workflow_run post-merge actions to release branches"
+  );
+  console.log("✓ release post-merge handles bot-created release merges");
+}
+
 console.log("\nAll structure tests passed.");
