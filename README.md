@@ -404,6 +404,96 @@ fix CRITICAL immediately → run tests
 
 ---
 
+### paper-research
+> Proactively use academic literature when it can improve technical answers, even when the user does not explicitly ask for papers or research.
+
+<instruction>
+Use academic evidence when it clearly improves a technical answer, even if the user did not ask for papers. Keep automatically triggered citations lightweight: the main answer comes first, and research support follows only as much as it helps the user decide, verify, or go deeper.
+</instruction>
+
+**Activation**
+
+Trigger this skill for:
+
+- algorithm or data-structure internals where original or survey literature exists
+- system design trade-offs with empirical or comparative research
+- performance analysis, benchmark interpretation, or claims about speed, accuracy, scale, or quality
+- named techniques, models, protocols, storage designs, indexing methods, compression methods, ranking methods, or distributed algorithms
+- comparisons such as "A vs B" when prior work can clarify differences
+- requests for trend, state of the art, recent work, prior work, references, evidence, or source attribution
+- academic identifiers, conference names, paper titles, author names, or uploaded academic documents
+
+Skip this skill for casual conversation, product documentation, trivial syntax, setup questions, ordinary code work without methodological depth, or explicit requests for a short answer without sources.
+
+**Modes**
+
+| Mode | Signal | Outcome |
+|---|---|---|
+| Automatic support | technical question where literature would help | answer normally, then add a short research note |
+| Search | broad topic, trend, or evidence request | find a small set of relevant papers and synthesize |
+| Single-paper analysis | paper identifier, title, URL, or academic document | summarize metadata, method, results, limits, and source |
+| Survey or comparison | multiple methods, "A vs B", state of the art | compare representative papers and explain trade-offs |
+
+**Workflow**
+
+classify need → search or inspect sources → prefer primary evidence → distinguish peer-reviewed work from preprints → extract problem, contribution, method, evaluation, results, limits, and implications → synthesize what the evidence changes → cite stable identifiers or venue/year metadata
+
+**Source Priority**
+
+peer-reviewed conference, journal, or workshop papers → well-cited preprints with clear methodology → official proceedings, author pages, and reproducibility artifacts → benchmark leaderboards or implementation indexes as supporting evidence only → secondary summaries only when primary sources are unavailable or used for navigation
+
+**Output**
+
+For automatic support, keep the research note short:
+
+```
+참고: <paper or venue/year> reports a related finding: <one practical implication>.
+```
+
+For a single paper:
+
+```
+# <title>
+Authors / venue or status / year
+
+## One-line Summary
+## Core Contributions
+## Method
+## Results
+## Limitations
+## Practical Takeaway
+## Sources
+```
+
+For a survey or comparison:
+
+```
+## Related Work: <topic>
+
+### 1. <paper>
+- Core idea:
+- Evidence:
+- Limit:
+- Source:
+```
+
+**Rules**
+<constraints>
+- do not make remembered numeric claims without source verification
+- do not over-weight a preprint when peer-reviewed evidence contradicts it
+- do not let citations overwhelm the answer when research was not explicitly requested
+- keep summaries copyright-safe and concise
+- measured results, author claims, and practical interpretation remain distinguishable
+- report when no strong academic evidence was found
+</constraints>
+
+**Done**
+<criteria>
+the answer uses the right level of academic evidence + source status is clear + claims are attributed + limitations are stated + automatic citations remain lightweight
+</criteria>
+
+---
+
 ### framework-selection
 > Choose the right tool, library, or architecture for the task — minimal complexity for the requirement.
 

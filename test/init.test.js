@@ -67,6 +67,7 @@ withTempDir((homeDir) => {
     "version",
     "ai-token-optimize",
     "principle-audit",
+    "paper-research",
     "framework-selection",
     "rag-development",
     "rag-failure-diagnosis",
