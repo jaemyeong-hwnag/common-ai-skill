@@ -7,6 +7,13 @@ You are the implementation: read the skill → inspect this project → fulfill 
 One skill works for any project, any language, any AI — because you are the adapter.
 </instruction>
 
+## Positioning
+
+ai-skill-interface is not a skill marketplace or registry.
+It is a portable operating contract for AI coding agents: delivery, testing, coverage, docs, security, recovery, RAG diagnosis, evaluation, and agent runtime discipline.
+
+Package managers distribute skills. This project defines the reusable development behaviors an AI agent should satisfy across projects.
+
 ## Installation
 
 ```bash
@@ -17,7 +24,7 @@ npx ai-skill-interface
 pip install ai-skill-interface && ai-skill-interface
 
 # git submodule — wires skills into your project's CLAUDE.md
-curl -sL https://raw.githubusercontent.com/jaemyeong-hwnag/ai-skill-interface/main/scripts/submodule-install.sh | sh
+curl -sL https://raw.githubusercontent.com/jaemyeong-hwnag/common-ai-skill/main/scripts/submodule-install.sh | sh
 ```
 
 ## How Skills Are Loaded

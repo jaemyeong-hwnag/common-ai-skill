@@ -190,7 +190,24 @@ function extractFencedBlockAfterHeading(content, heading) {
   console.log("✓ installer SKILLS arrays match skills/ directory");
 }
 
-// ── Test 7: README auto-selection mirrors auto-select entrypoint ─────────────
+// ── Test 7: submodule installer includes every skill ─────────────────────────
+{
+  const submoduleInstaller = fs.readFileSync(
+    path.resolve(__dirname, "../scripts/submodule-install.sh"),
+    "utf8"
+  );
+  const dirSkills = installedSkills();
+
+  for (const skill of dirSkills) {
+    assert.ok(
+      submoduleInstaller.includes(skill),
+      `scripts/submodule-install.sh SKILLS list must include "${skill}"`
+    );
+  }
+  console.log("✓ submodule installer includes every skill");
+}
+
+// ── Test 8: README auto-selection mirrors auto-select entrypoint ─────────────
 {
   const readme = fs.readFileSync(README, "utf8");
   const autoSelect = fs.readFileSync(
@@ -212,7 +229,7 @@ function extractFencedBlockAfterHeading(content, heading) {
   console.log("✓ auto-select selection rules mirror README.md");
 }
 
-// ── Test 8: Reusable workflow embedded Python is not double-escaped ──────────
+// ── Test 9: Reusable workflow embedded Python is not double-escaped ──────────
 {
   const workflow = fs.readFileSync(
     path.resolve(__dirname, "../.github/workflows/reusable-skill-check.yml"),
