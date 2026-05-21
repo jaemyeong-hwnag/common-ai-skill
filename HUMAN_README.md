@@ -63,7 +63,7 @@ Package managers distribute skills. This project defines the behavior contracts 
 ## 설치 / Install
 
 ```bash
-# npm — installs 24 skills to ~/.claude/skills/
+# npm — installs 25 skills to ~/.claude/skills/
 npx ai-skill-interface
 
 # pip
@@ -78,7 +78,7 @@ After install, skills apply automatically across all your projects.
 
 ---
 
-## 스킬 목록 / Skills (24)
+## 스킬 목록 / Skills (25)
 
 | 스킬 / Skill | 적용 시점 / When | 하는 일 / Does |
 |---|---|---|
@@ -94,6 +94,7 @@ After install, skills apply automatically across all your projects.
 | `docs-sync` | 코드 변경 후 / after code change | 문서 드리프트 감지 및 동기화 / detect and sync doc drift |
 | `security-audit` | 온디맨드 / on demand | 시크릿·취약점·인젝션 패턴 탐지 / secrets, vulnerabilities, injection |
 | `ai-token-optimize` | AI용 코드 작성 / writing AI-consumed code | 프롬프트·툴 출력 토큰 절감 / reduce tokens in prompts and tool outputs |
+| `ai-token-efficiency-research` | 토큰 효율 연구 / token efficiency research | 비용·품질 트레이드오프를 논문 근거로 판단 / use research evidence for cost-quality trade-offs |
 | `principle-audit` | 온디맨드 / on demand | 프로젝트 원칙 위반 탐지 / detect principle violations |
 | `observability` | AI 워크플로우 구현 / AI workflow | 모델 호출·상태 전환 계측 / trace model calls and state transitions |
 | `evaluation` | AI 품질 측정 / AI quality | 데이터셋 생성, 평가자 작성 / create datasets, write evaluators |
