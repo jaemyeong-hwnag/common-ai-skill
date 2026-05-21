@@ -14,14 +14,51 @@ It is a portable operating contract for AI coding agents: delivery, testing, cov
 
 Package managers distribute skills. This project defines the reusable development behaviors an AI agent should satisfy across projects.
 
+## AI Agents: Start Here
+
+If you are an AI agent given only this repository URL:
+
+1. Read this README first.
+2. Inspect the target project before choosing skills.
+3. Select only the required skills using Auto-Selection.
+4. Read the selected `skills/*/SKILL.md` files.
+5. Apply those skill contracts to the target project using that project's own language, tools, tests, and conventions.
+6. Do not load every skill unless the task requires it.
+7. Do not install packages, modify project config, or wire agent files unless the user explicitly allowed setup.
+
+Default mode is read-only: use the repository contents directly from GitHub. Package managers are optional distribution paths, not a required first step.
+
+## Package Manager Policy
+
+Use npm or PyPI only when setup is useful for the current task and allowed by the user or environment policy.
+
+Selection:
+- if Node.js/npm is already available, prefer `npx ai-skill-interface init`
+- if Python/pip is already available, use `pip install ai-skill-interface && ai-skill-interface init`
+- if neither package manager is clearly available, read `README.md` and the selected `skills/*/SKILL.md` files directly from GitHub
+
+Safety:
+<constraints>
+- do not install unrelated packages
+- do not install globally unless explicitly allowed
+- do not modify agent config files unless project setup was requested
+- if package installation or config mutation is uncertain, ask before installing
+</constraints>
+
 ## Installation
 
 ```bash
 # npm — installs skills to ~/.claude/skills/
 npx ai-skill-interface
 
+# npm — installs skills and configures the current project
+npx ai-skill-interface init
+
 # pip — installs skills to ~/.claude/skills/
 pip install ai-skill-interface && ai-skill-interface
+
+# pip — installs skills and configures the current project
+pip install ai-skill-interface && ai-skill-interface init
 
 # git submodule — wires skills into your project's CLAUDE.md
 curl -sL https://raw.githubusercontent.com/jaemyeong-hwnag/common-ai-skill/main/scripts/submodule-install.sh | sh
