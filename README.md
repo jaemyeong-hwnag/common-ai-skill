@@ -7,6 +7,13 @@ You are the implementation: read the skill → inspect this project → fulfill 
 One skill works for any project, any language, any AI — because you are the adapter.
 </instruction>
 
+## Positioning
+
+ai-skill-interface is not a skill marketplace or registry.
+It is a portable operating contract for AI coding agents: delivery, testing, coverage, docs, security, recovery, RAG diagnosis, evaluation, and agent runtime discipline.
+
+Package managers distribute skills. This project defines the reusable development behaviors an AI agent should satisfy across projects.
+
 ## Installation
 
 ```bash
@@ -17,7 +24,7 @@ npx ai-skill-interface
 pip install ai-skill-interface && ai-skill-interface
 
 # git submodule — wires skills into your project's CLAUDE.md
-curl -sL https://raw.githubusercontent.com/jaemyeong-hwnag/ai-skill-interface/main/scripts/submodule-install.sh | sh
+curl -sL https://raw.githubusercontent.com/jaemyeong-hwnag/common-ai-skill/main/scripts/submodule-install.sh | sh
 ```
 
 ## How Skills Are Loaded
@@ -371,6 +378,55 @@ labels compressed + collections tabular + numerics notation-formatted + critical
 
 ---
 
+### ai-token-efficiency-research
+> Use research evidence to choose token-efficiency and cost-reduction options for AI systems.
+
+**Scope**
+
+reducing unnecessary input material → reducing retained runtime state → reusing stable context → retaining and retrieving durable context → resource, quality, stability, and safety trade-offs → process-level value analysis
+
+**Activation**
+
+Trigger this skill when the user asks how to reduce token cost while maintaining quality, which efficiency strategy fits a workload, for source-backed evidence in token efficiency, for a research-backed skill or reference document, or why a token-saving option changes quality, time, or operating cost.
+
+Skip when the request has no research depth, official pricing or documentation is the primary source of truth, the user asks for a quick non-research answer, or the task has no token-efficiency question.
+
+**Research Map**
+
+identify avoidable material → reduce retained runtime state → reuse stable context across repeated work → retain and retrieve durable context → locate process steps with poor value for their cost
+
+**Workflow**
+
+identify workload shape → map to research area → prefer primary sources, evaluation reports, and maintained evidence → verify all quantitative claims before reporting them → compare applicability, expected value, quality risk, operational complexity, and failure modes → recommend a path and measurement plan
+
+**Evidence Requirements**
+<constraints>
+- numeric claims must be sourced, current, and tied to the reported conditions
+- preprint, peer-reviewed, project-site, evaluation, and secondary-summary evidence must be clearly distinguishable
+- do not generalize one result to all settings
+- savings claims must account for all relevant usage
+- efficiency methods must include quality and operational caveats
+- stale or unverified research claims must be labeled as unverified or omitted
+</constraints>
+
+**Output**
+
+```
+Recommendation: <selected option>
+Fit: <why it applies>
+Evidence: <sourced support or measure-first note>
+Limit: <main caveat>
+Validation: <first check>
+Sources: <source identifiers>
+```
+
+**Done**
+<criteria>
+the answer maps the workload to the right option + research claims are sourced and scoped + trade-offs are explicit + recommendation includes a measurement path + unsupported numbers are not reported
+</criteria>
+
+---
+
 ### principle-audit
 > Audit the codebase for violations of the project's core principles — detect unintended system-imposed constraints that contradict the project's stated goals.
 
@@ -401,6 +457,96 @@ INFO(potential risk) → comment/TODO
 
 per violation: file:line + description + related principle + fix recommendation
 fix CRITICAL immediately → run tests
+
+---
+
+### paper-research
+> Proactively use academic literature when it can improve technical answers, even when the user does not explicitly ask for papers or research.
+
+<instruction>
+Use academic evidence when it clearly improves a technical answer, even if the user did not ask for papers. Keep automatically triggered citations lightweight: the main answer comes first, and research support follows only as much as it helps the user decide, verify, or go deeper.
+</instruction>
+
+**Activation**
+
+Trigger this skill for:
+
+- algorithm or data-structure internals where original or survey literature exists
+- system design trade-offs with empirical or comparative research
+- performance analysis, benchmark interpretation, or claims about speed, accuracy, scale, or quality
+- named techniques, models, protocols, storage designs, indexing methods, compression methods, ranking methods, or distributed algorithms
+- comparisons such as "A vs B" when prior work can clarify differences
+- requests for trend, state of the art, recent work, prior work, references, evidence, or source attribution
+- academic identifiers, conference names, paper titles, author names, or uploaded academic documents
+
+Skip this skill for casual conversation, product documentation, trivial syntax, setup questions, ordinary code work without methodological depth, or explicit requests for a short answer without sources.
+
+**Modes**
+
+| Mode | Signal | Outcome |
+|---|---|---|
+| Automatic support | technical question where literature would help | answer normally, then add a short research note |
+| Search | broad topic, trend, or evidence request | find a small set of relevant papers and synthesize |
+| Single-paper analysis | paper identifier, title, URL, or academic document | summarize metadata, method, results, limits, and source |
+| Survey or comparison | multiple methods, "A vs B", state of the art | compare representative papers and explain trade-offs |
+
+**Workflow**
+
+classify need → search or inspect sources → prefer primary evidence → distinguish peer-reviewed work from preprints → extract problem, contribution, method, evaluation, results, limits, and implications → synthesize what the evidence changes → cite stable identifiers or venue/year metadata
+
+**Source Priority**
+
+peer-reviewed conference, journal, or workshop papers → well-cited preprints with clear methodology → official proceedings, author pages, and reproducibility artifacts → benchmark leaderboards or implementation indexes as supporting evidence only → secondary summaries only when primary sources are unavailable or used for navigation
+
+**Output**
+
+For automatic support, keep the research note short:
+
+```
+참고: <paper or venue/year> reports a related finding: <one practical implication>.
+```
+
+For a single paper:
+
+```
+# <title>
+Authors / venue or status / year
+
+## One-line Summary
+## Core Contributions
+## Method
+## Results
+## Limitations
+## Practical Takeaway
+## Sources
+```
+
+For a survey or comparison:
+
+```
+## Related Work: <topic>
+
+### 1. <paper>
+- Core idea:
+- Evidence:
+- Limit:
+- Source:
+```
+
+**Rules**
+<constraints>
+- do not make remembered numeric claims without source verification
+- do not over-weight a preprint when peer-reviewed evidence contradicts it
+- do not let citations overwhelm the answer when research was not explicitly requested
+- keep summaries copyright-safe and concise
+- measured results, author claims, and practical interpretation remain distinguishable
+- report when no strong academic evidence was found
+</constraints>
+
+**Done**
+<criteria>
+the answer uses the right level of academic evidence + source status is clear + claims are attributed + limitations are stated + automatic citations remain lightweight
+</criteria>
 
 ---
 

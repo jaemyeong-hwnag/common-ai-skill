@@ -35,7 +35,7 @@ jobs:
 
           for skill in $(echo "$SKILLS" | tr ',' ' '); do
             skill=$(echo "$skill" | xargs)
-            URL="https://raw.githubusercontent.com/jaemyeong-hwnag/ai-skill-interface/main/skills/${skill}/SKILL.md"
+            URL="https://raw.githubusercontent.com/jaemyeong-hwnag/common-ai-skill/main/skills/${skill}/SKILL.md"
             CONTENT=$(curl -sf "$URL" || echo "")
             if [ -n "$CONTENT" ]; then
               SKILL_CONTENT="${SKILL_CONTENT}\n\n### Skill: ${skill}\n${CONTENT}"
@@ -153,7 +153,7 @@ jobs:
             cat /tmp/skill_violations.txt
             echo ""
             echo "---"
-            echo "*Powered by [ai-skill-interface](https://github.com/jaemyeong-hwnag/ai-skill-interface)*"
+            echo "*Powered by [ai-skill-interface](https://github.com/jaemyeong-hwnag/common-ai-skill)*"
           } > /tmp/comment.md
           gh pr comment ${{ github.event.pull_request.number }} --body-file /tmp/comment.md
 
