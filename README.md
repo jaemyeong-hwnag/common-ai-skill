@@ -48,6 +48,7 @@ action.risk    : reversible | irreversible
 
 ```
 change.type=code
+  → worktree-parent-rebase (child or agent-created worktree, before edits)
   → delivery-workflow
   + hexagonal-development   (arch.pattern=hexagonal or layered)
   + interface-first-development (change.scope=interface)
@@ -939,6 +940,44 @@ complexity accumulation  → adding harness components without re-testing necess
 **Done**
 <criteria>
 permission boundaries enforced + execution sandboxed with rollback + verification pipeline active (deterministic + semantic + generator-evaluator) + architectural constraints mechanically enforced + feedback loops convert failures to constraints + all agent outputs pass same quality gates as human outputs + audit trail present for all agent actions + session continuity via progress artifacts + doom loop detection active + risk-based routing configured + harness components documented
+</criteria>
+
+---
+
+### worktree-parent-rebase
+> Before work starts in a child worktree, rebase the worktree branch onto its parent branch safely.
+
+**Sequence**
+
+detect worktree branch context → identify parent branch → verify clean workspace → refresh parent when allowed → rebase worktree branch onto parent → verify ancestry → begin work
+
+**Activation**
+
+- child worktree or agent-created task worktree
+- delegated task, parallel agent task, or sandbox backed by its own worktree branch
+- resumed non-parent worktree where the parent may have changed
+- integration work where the base branch matters
+
+**Parent Selection**
+
+Prefer explicit worktree metadata, task metadata, or user instruction. Otherwise infer from project conventions, review base, branch relationship, upstream tracking, or the nearest stable integration branch.
+
+If multiple plausible parents remain, stop and ask for the parent branch instead of guessing.
+
+**Rules**
+<constraints>
+- perform this before making task edits
+- never rebase the parent branch itself as the child branch
+- never rebase when the workspace has uncommitted user changes unless the user explicitly approves how to preserve them
+- never discard, reset, or overwrite existing work to make a rebase succeed
+- refresh the parent only through project-approved network and repository conventions
+- stop on ambiguous conflicts, unclear parentage, protected branches, or ownership uncertainty
+- do not force-push after a rebase unless explicitly authorized for the owned child branch
+</constraints>
+
+**Done**
+<criteria>
+current branch is the worktree child branch + parent branch is known + workspace was clean before rebase + worktree branch now includes the parent branch tip + no unresolved conflicts remain
 </criteria>
 
 ---

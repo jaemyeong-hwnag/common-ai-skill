@@ -63,7 +63,7 @@ Package managers distribute skills. This project defines the behavior contracts 
 ## 설치 / Install
 
 ```bash
-# npm — installs 25 skills to ~/.claude/skills/
+# npm — installs 26 skills to ~/.claude/skills/
 npx ai-skill-interface
 
 # pip
@@ -78,7 +78,7 @@ After install, skills apply automatically across all your projects.
 
 ---
 
-## 스킬 목록 / Skills (25)
+## 스킬 목록 / Skills (26)
 
 | 스킬 / Skill | 적용 시점 / When | 하는 일 / Does |
 |---|---|---|
@@ -100,6 +100,7 @@ After install, skills apply automatically across all your projects.
 | `evaluation` | AI 품질 측정 / AI quality | 데이터셋 생성, 평가자 작성 / create datasets, write evaluators |
 | `human-in-the-loop` | 비가역적 작업 / irreversible actions | 인터럽트 → 승인 → 재개 / interrupt → approval → resume |
 | `agent-orchestration` | 멀티 에이전트 / multi-agent | 라우팅·위임·병렬 처리 / routing, delegation, parallelism |
+| `worktree-parent-rebase` | 하위 작업트리 시작 전 / before child worktree work | 부모 브랜치 기준 리베이스 후 작업 / rebase onto parent branch before work |
 | `rag-development` | RAG 파이프라인 / RAG pipeline | 수집 → 청킹 → 임베딩 → 검색 → 생성 / ingest → chunk → embed → retrieve → generate |
 | `rag-failure-diagnosis` | RAG 답변 실패 / RAG answer failure | 검색·생성·서버 책임 판정 / assign retrieval, generation, or server fault |
 | `rag-regression-testing` | RAG 수정 후 / after RAG fix | 동일·유사·무관 케이스 검증 / same, nearby, unrelated regression tests |
