@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- add `worktree-parent-rebase` skill for child and agent-created worktrees
+
 ## [1.8.0] - 2026-05-21
 
 ### Added

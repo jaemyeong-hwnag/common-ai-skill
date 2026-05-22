@@ -30,6 +30,7 @@ action.risk    : reversible | irreversible
 
 ```
 change.type=code
+  → worktree-parent-rebase (child or agent-created worktree, before edits)
   → delivery-workflow
   + hexagonal-development   (arch.pattern=hexagonal or layered)
   + interface-first-development (change.scope=interface)

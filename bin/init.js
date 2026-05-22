@@ -32,6 +32,7 @@ const SKILLS = [
   "human-in-the-loop",
   "agent-orchestration",
   "harness-engineering",
+  "worktree-parent-rebase",
   "auto-select",
 ];
 
