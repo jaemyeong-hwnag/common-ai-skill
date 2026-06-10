@@ -35,39 +35,60 @@ Each skill lives in `skills/<name>/SKILL.md`. When an AI reads this repository, 
 
 Detect these signals before selecting skills:
 
-```
-change.type    : code | ai-feature | explicit
-change.scope   : core-logic | interface | infra | test | docs
-arch.pattern   : hexagonal | layered | none
-quality.status : no-tests | low-coverage | high-coverage
-ai.complexity  : single-call | pipeline | stateful | multi-agent
-action.risk    : reversible | irreversible
+```text
+change.type    : code | docs | test | ai-feature | ops | release | explicit
+change.scope   : core-logic | interface | infra | config | script | docs | skill-inventory
+quality.status : unknown | no-tests | low-coverage | failing-tests | high-coverage
+action.risk    : reversible | destructive | external | credential | irreversible
+ai.system      : none | rag | agent-runtime | automation | evaluation
+execution      : none | command | test | server | daemon | deployment | monitor
+system.storage : normal | low-disk | cleanup-requested
 ```
 
 ## Auto-Selection
 
-```
-change.type=code
-  → delivery-workflow
-  + hexagonal-development   (arch.pattern=hexagonal or layered)
-  + interface-first-development (change.scope=interface)
-  + code-documentation      (change.scope=interface or public surface changed)
-  → finalize                (after completion)
+```text
+Any implementation/code/config/script change
+  -> worktree-parent-rebase (child or agent-provided worktree, before edits)
+  -> delivery-workflow
+  + test-runner          (after change or when verifying)
+  + coverage             (new behavior, low coverage, or coverage requested)
+  + docs-sync            (public behavior, config, API, schema, install, or workflow changed)
+  -> finalize            (when wrapping up)
 
-change.type=ai-feature
-  → framework-selection     (always first)
-  + rag-development         (retrieval pipeline present)
-  + rag-failure-diagnosis   (retrieval-backed answer quality failure reported)
-  + rag-regression-testing  (retrieval-backed behavior changed after failure)
-  + observability           (ai.complexity≥pipeline)
-  + evaluation              (quality measurement needed)
-  + human-in-the-loop       (action.risk=irreversible)
-  + agent-orchestration     (ai.complexity=multi-agent)
-  + harness-engineering     (agent runtime design, guardrails, or sandboxing involved)
+Any command/test/server/deployment/monitor run
+  -> self-recovery       (define success/failure, monitor, recover stalls/failures)
 
-change.type=explicit
-  → /version /security-audit /principle-audit /ai-token-optimize
-    /coverage /test-runner /finalize /self-recovery
+Tool/library/architecture/package/approach choice
+  -> framework-selection
+
+Security-sensitive work
+  -> security-audit      (secrets, env, auth, permissions, deps, install scripts, network, infra)
+
+Project principle, ownership, architecture, or consistency risk
+  -> principle-audit
+
+RAG answer quality problem
+  -> rag-failure-diagnosis
+  -> rag-regression-testing after retrieval/prompt/fallback/guardrail changes
+
+Agent runtime, automation, sandbox, guardrail, workflow reliability, long-running AI work
+  -> harness-engineering
+
+Irreversible, destructive, external, credential, high-cost, or ambiguous actions
+  -> human-in-the-loop
+
+Release/version/changelog/tag/package publication
+  -> version
+
+Skill creation, update, registration, installation, validation, or sync
+  -> automatic-skill-activation
+  + framework-selection    (when choosing source/install scope)
+  + security-audit         (external repo, install script, or global install involved)
+
+Disk pressure, cache cleanup, or storage reclamation
+  -> disk-cleanup
+  + human-in-the-loop      (before destructive deletion)
 ```
 
 ## Composition
@@ -939,6 +960,94 @@ complexity accumulation  → adding harness components without re-testing necess
 **Done**
 <criteria>
 permission boundaries enforced + execution sandboxed with rollback + verification pipeline active (deterministic + semantic + generator-evaluator) + architectural constraints mechanically enforced + feedback loops convert failures to constraints + all agent outputs pass same quality gates as human outputs + audit trail present for all agent actions + session continuity via progress artifacts + doom loop detection active + risk-based routing configured + harness components documented
+</criteria>
+
+---
+
+### worktree-parent-rebase
+> Before work starts in a child worktree, rebase the worktree branch onto its parent branch safely.
+
+**Sequence**
+
+detect worktree branch context → identify parent branch → verify clean workspace → refresh parent when allowed → rebase worktree branch onto parent → verify ancestry → begin work
+
+**Activation**
+
+- child worktree or agent-created task worktree
+- delegated task, parallel agent task, or sandbox backed by its own worktree branch
+- resumed non-parent worktree where the parent may have changed
+- integration work where the base branch matters
+
+**Parent Selection**
+
+Prefer explicit worktree metadata, task metadata, or user instruction. Otherwise infer from project conventions, review base, branch relationship, upstream tracking, or the nearest stable integration branch.
+
+If multiple plausible parents remain, stop and ask for the parent branch instead of guessing.
+
+**Rules**
+<constraints>
+- perform this before making task edits
+- never rebase the parent branch itself as the child branch
+- never rebase when the workspace has uncommitted user changes unless the user explicitly approves how to preserve them
+- never discard, reset, or overwrite existing work to make a rebase succeed
+- refresh the parent only through project-approved network and repository conventions
+- stop on ambiguous conflicts, unclear parentage, protected branches, or ownership uncertainty
+- do not force-push after a rebase unless explicitly authorized for the owned child branch
+</constraints>
+
+**Done**
+<criteria>
+current branch is the worktree child branch + parent branch is known + workspace was clean before rebase + worktree branch now includes the parent branch tip + no unresolved conflicts remain
+</criteria>
+
+---
+
+### automatic-skill-activation
+
+**Use when** creating, updating, registering, installing, validating, syncing, or promoting an AI skill.
+
+**Contract**
+<context>
+Make every skill selectable without a user typing an exact command. Skill descriptions must name the situations, artifacts, and risk signals that should trigger the skill automatically.
+</context>
+
+**Rules**
+<constraints>
+- write trigger descriptions in natural task language, not only command names
+- update the routing entry point when a new skill should be selected automatically
+- verify overlapping skills and dependency order before registration
+- keep project-specific wrappers local unless the behavior is broadly reusable
+- test the install/sync path after changing global skill inventory
+</constraints>
+
+**Done**
+<criteria>
+skill has command-free trigger language + dependencies are explicit + auto-select can route to it + installer/source inventory is synchronized
+</criteria>
+
+---
+
+### disk-cleanup
+
+**Use when** disk space is low, a user asks to free storage, development caches are large, or safe cleanup is needed across local tooling.
+
+**Contract**
+<context>
+Audit first, classify reclaimable cache data, and require approval before destructive deletion. Prefer project and tool caches over user-authored files.
+</context>
+
+**Rules**
+<constraints>
+- never delete source files, credentials, project data, or user documents as a cleanup shortcut
+- inspect size and ownership before removal
+- separate audit output from cleanup execution
+- ask for approval before destructive cleanup or broad cache removal
+- report what was removed and what was intentionally left untouched
+</constraints>
+
+**Done**
+<criteria>
+space pressure is quantified + safe targets are identified + approved cleanup is completed or explicitly skipped + remaining risk is documented
 </criteria>
 
 ---

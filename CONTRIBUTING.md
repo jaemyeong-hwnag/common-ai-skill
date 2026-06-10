@@ -51,10 +51,11 @@ For each skill file in `skills/*/SKILL.md` and for `README.md`, check:
 
 If any criterion fails or improvements are found:
 
-1. Create a branch from `develop`: `improve/ai-audit-YYYY-MM-DD`
-2. Make changes
-3. Open PR targeting `develop`
-4. Submit PR with this structure:
+1. Create an issue with the `feature` label
+2. Create a branch from `develop`: `feature/<issue-id>-ai-audit-YYYY-MM-DD`
+3. Make changes
+4. Open PR targeting `develop`
+5. Submit PR with this structure:
 
 ```
 Title: improve: <what was improved>
@@ -105,22 +106,21 @@ This project follows **git flow**.
 |--------|------|--------|---------|
 | `main` | — | — | Production. Never push directly. |
 | `develop` | `main` | — | Integration. Never push directly. |
-| `feature/<id>-<desc>` | `develop` | `develop` | New features |
-| `fix/<id>-<desc>` | `develop` | `develop` | Bug fixes |
-| `improve/<desc>` | `develop` | `develop` | AI audit improvements |
+| `feature/<id>-<desc>` | `develop` | `develop` | Planned work: features, docs, tooling, housekeeping, and audit improvements |
+| `fix/<id>-<desc>` | `develop` | `develop` | Bug fixes before release |
 | `hotfix/<id>-<desc>` | `main` | `main` + `develop` | Urgent production fixes |
 | `release/<version>` | `develop` | `main` + `develop` | Release preparation |
-| `chore/<desc>` | `develop` | `develop` | Config, tooling, housekeeping |
 
 ### Rules
 
 <constraints>
 - all PRs must target `develop`, except `hotfix/*` and `release/*` which target `main`
 - branch from `develop` for all new work; branch from `main` only for hotfixes
-- rebase merge for `feature/*`, `fix/*`, `improve/*`, `chore/*` (linear history)
+- use `feature/*` for planned docs, tooling, housekeeping, and AI audit improvements; do not create `chore/*` or `improve/*` branches
+- rebase merge for `feature/*` and `fix/*` (linear history)
 - merge commit for `release/*` and `hotfix/*` (preserves release boundary in history)
 - never push directly to `main` or `develop`
-- branch name must include issue ID when one exists: `feature/<id>-<description>`
+- branch name must include the issue ID except for `release/*`: `<type>/<id>-<description>`
 </constraints>
 
 ## Workflow Automation Setup

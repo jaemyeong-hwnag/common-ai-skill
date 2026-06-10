@@ -1,6 +1,6 @@
 name: Chore / Documentation
 description: Configuration, tooling, housekeeping, or documentation changes
-labels: ["chore"]
+labels: ["feature"]
 body:
   - type: textarea
     id: description

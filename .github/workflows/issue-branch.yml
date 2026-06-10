@@ -11,8 +11,9 @@ permissions:
 jobs:
   create-branch:
     runs-on: ubuntu-latest
-    # Only trigger for work-type labels
-    if: contains(fromJSON('["feature","fix","hotfix","improve","chore"]'), github.event.label.name)
+    # Only trigger for Git Flow branch-type labels.
+    # Docs, chores, and audit improvements use feature/* branches.
+    if: contains(fromJSON('["feature","fix","hotfix"]'), github.event.label.name)
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,8 +40,6 @@ jobs:
             feature) BRANCH="feature/${ISSUE_NUMBER}-${SLUG}"; BASE="develop" ;;
             fix)     BRANCH="fix/${ISSUE_NUMBER}-${SLUG}";     BASE="develop" ;;
             hotfix)  BRANCH="hotfix/${ISSUE_NUMBER}-${SLUG}";  BASE="main" ;;
-            improve) BRANCH="improve/${ISSUE_NUMBER}-${SLUG}"; BASE="develop" ;;
-            chore)   BRANCH="chore/${ISSUE_NUMBER}-${SLUG}";   BASE="develop" ;;
           esac
 
           echo "branch=$BRANCH" >> $GITHUB_OUTPUT

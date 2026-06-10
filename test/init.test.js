@@ -35,6 +35,10 @@ withTempDir((homeDir) => {
     fs.existsSync(path.join(dest, "delivery-workflow", "SKILL.md")),
     "delivery-workflow/SKILL.md should be copied"
   );
+  assert.ok(
+    fs.existsSync(path.join(dest, "disk-cleanup", "scripts", "audit_caches.sh")),
+    "skill auxiliary files should be copied"
+  );
   console.log("✓ copies skills to ~/.claude/skills/");
 });
 
@@ -78,6 +82,9 @@ withTempDir((homeDir) => {
     "human-in-the-loop",
     "agent-orchestration",
     "harness-engineering",
+    "worktree-parent-rebase",
+    "automatic-skill-activation",
+    "disk-cleanup",
     "auto-select",
   ];
   for (const skill of expected) {

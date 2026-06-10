@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- add `worktree-parent-rebase` skill for child and agent-created worktrees
+- add `automatic-skill-activation` skill for command-free skill routing during skill lifecycle work
+- add `disk-cleanup` skill for safe audit-first cleanup of development caches and local disk pressure
+- copy full skill directories during npm/PyPI global install so skill auxiliary files are preserved
+
 ## [1.8.0] - 2026-05-21
 
 ### Added

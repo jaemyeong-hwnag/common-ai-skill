@@ -22,8 +22,6 @@ jobs:
             feature/*) LABEL="feature" ;;
             fix/*)     LABEL="fix" ;;
             hotfix/*)  LABEL="hotfix" ;;
-            improve/*) LABEL="improve" ;;
-            chore/*)   LABEL="chore" ;;
             release/*) LABEL="release" ;;
             *)
               echo "No type label for branch: $BRANCH"

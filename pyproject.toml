@@ -24,4 +24,4 @@ where = ["."]
 include = ["ai_skill_interface*"]
 
 [tool.setuptools.package-data]
-ai_skill_interface = ["skills/**/*.md"]
+ai_skill_interface = ["skills/**/*"]

@@ -1,6 +1,6 @@
 name: AI Audit Improvement
 description: Skill abstraction, format, or completeness improvement
-labels: ["improve"]
+labels: ["feature"]
 body:
   - type: textarea
     id: target

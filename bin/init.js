@@ -32,8 +32,12 @@ const SKILLS = [
   "human-in-the-loop",
   "agent-orchestration",
   "harness-engineering",
+  "worktree-parent-rebase",
+  "automatic-skill-activation",
+  "disk-cleanup",
   "auto-select",
 ];
+
 
 // Agent configs: each defines how to write the auto-select entry point
 // claude uses @import; others inline the skill content (no import support)
@@ -80,19 +84,32 @@ const AGENTS = [
   },
 ];
 
+function copyDir(srcDir, destDir) {
+  fs.mkdirSync(destDir, { recursive: true });
+  for (const entry of fs.readdirSync(srcDir, { withFileTypes: true })) {
+    const srcPath = path.join(srcDir, entry.name);
+    const destPath = path.join(destDir, entry.name);
+    if (entry.isDirectory()) {
+      copyDir(srcPath, destPath);
+    } else if (entry.isFile()) {
+      fs.copyFileSync(srcPath, destPath);
+    }
+  }
+}
+
 function installGlobal() {
   fs.mkdirSync(SKILLS_DEST, { recursive: true });
 
   let installed = 0;
   for (const skill of SKILLS) {
-    const src = path.join(SKILLS_SRC, skill, "SKILL.md");
-    if (!fs.existsSync(src)) {
+    const srcDir = path.join(SKILLS_SRC, skill);
+    const srcSkill = path.join(srcDir, "SKILL.md");
+    if (!fs.existsSync(srcSkill)) {
       console.warn(`⚠ skill not found: ${skill}`);
       continue;
     }
     const destDir = path.join(SKILLS_DEST, skill);
-    fs.mkdirSync(destDir, { recursive: true });
-    fs.copyFileSync(src, path.join(destDir, "SKILL.md"));
+    copyDir(srcDir, destDir);
     installed++;
   }
 
