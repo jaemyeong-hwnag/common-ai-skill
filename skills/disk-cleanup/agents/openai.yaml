@@ -1,0 +1,3 @@
+interface:
+  display_name: "Disk Cleanup"
+  short_description: "Audit and safely clean regenerable disk caches"

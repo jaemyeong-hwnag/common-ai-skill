@@ -29,8 +29,11 @@ SKILLS = [
     "agent-orchestration",
     "harness-engineering",
     "worktree-parent-rebase",
+    "automatic-skill-activation",
+    "disk-cleanup",
     "auto-select",
 ]
+
 
 # Agent configs: each defines how to write the auto-select entry point.
 # claude uses @import; others inline the skill content (no import support).
@@ -88,13 +91,13 @@ def install_global() -> None:
 
     installed = 0
     for skill in SKILLS:
-        src = src_root / skill / "SKILL.md"
-        if not src.exists():
+        src_dir = src_root / skill
+        src_skill = src_dir / "SKILL.md"
+        if not src_skill.exists():
             print(f"warning: skill not found: {skill}", file=sys.stderr)
             continue
         dest_dir = dest_root / skill
-        dest_dir.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(src, dest_dir / "SKILL.md")
+        shutil.copytree(src_dir, dest_dir, dirs_exist_ok=True)
         installed += 1
 
     print(f"✓ Installed {installed} skills to {dest_root}")
